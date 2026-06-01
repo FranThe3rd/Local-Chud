@@ -1,7 +1,6 @@
 # local chud
 
-**Self-hosted, local-first AI workspace** — MIT licensed. Slightly janky. Yours.
-
+**AI vibe coded Goyslop, copying Pewdiepie project"
 ```bash
 ./run.sh
 ```
