@@ -4,7 +4,7 @@ A local-first AI goyslop vibe coded workspace powered by Ollama. Basically copyi
 
 Run large language models on your own machine with a modern chat interface, memory, document support, research tools, and agent capabilities — no cloud required.
 
-## Quick Start
+## Quick Start Only Works On Mac Rn
 
 ```bash
 ./run.sh
@@ -100,12 +100,3 @@ Build and run with Docker:
 docker compose up --build
 ```
 
----
-
-## Philosophy
-
-Local Chud is designed around a simple idea:
-
-**Your models. Your data. Your machine.**
-
-No subscriptions, no API keys, and no unnecessary cloud dependencies. Run everything locally and stay in control of your workflow.
