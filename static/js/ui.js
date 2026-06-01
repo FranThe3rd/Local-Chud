@@ -20,10 +20,16 @@ export function onPanelShow(name, fn) {
 }
 
 export function showPanel(name) {
-  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach((p) => {
+    p.classList.remove("active");
+    p.removeAttribute("data-enter");
+  });
   const id = PANEL_IDS[name];
   const panel = id ? document.getElementById(id) : null;
-  if (panel) panel.classList.add("active");
+  if (panel) {
+    panel.classList.add("active");
+    requestAnimationFrame(() => panel.setAttribute("data-enter", "1"));
+  }
   if (panelHooks[name]) panelHooks[name]();
 }
 

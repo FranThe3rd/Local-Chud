@@ -37,6 +37,7 @@
         <h3 data-collapse="sessions">▾ Chats</h3>
         <ul id="session-list"></ul>
         <button type="button" class="secondary" id="btn-new-chat" style="width:100%;margin-top:0.5rem">+ New chat</button>
+        <button type="button" class="secondary danger" id="btn-delete-all-chats" style="width:100%;margin-top:0.35rem">Delete all chats</button>
       </section>
       <section>
         <h3 data-collapse="nav">▾ Workspace</h3>
@@ -56,15 +57,17 @@
 
     <main class="workspace">
       <div id="chat-panel" class="panel active">
-        <div id="chat-messages"></div>
-        <div id="chat-input-area">
-          <label class="checkbox-row">
-            <input type="checkbox" id="agent-mode" />
-            Agent
-          </label>
-          <textarea id="chat-input" rows="2" placeholder="Message… (Agent: read_file, web_search)"></textarea>
-          <button type="button" id="btn-send">Send</button>
-          <button type="button" class="secondary" id="btn-stop" disabled>Stop</button>
+        <div id="chat-app">
+          <div id="chat-messages"></div>
+          <div class="chat-input-area" id="chat-fallback-bar">
+            <label class="checkbox-row">
+              <input type="checkbox" id="agent-mode" />
+              Agent
+            </label>
+            <textarea id="chat-input" rows="2" placeholder="Message…"></textarea>
+            <button type="button" id="btn-send">Send</button>
+            <button type="button" class="secondary" id="btn-stop" disabled>Stop</button>
+          </div>
         </div>
       </div>
 
@@ -103,15 +106,17 @@
       <div id="documents-panel" class="panel">
         <div class="panel-header">
           <h2>Documents</h2>
-          <p>Markdown notes in your workspace DB</p>
+          <p>Edit markdown source — preview renders in chat when you ask for a document</p>
         </div>
         <div class="panel-body split-view">
           <div class="doc-list" id="doc-list"></div>
           <div class="editor-area">
             <input type="text" id="doc-title" placeholder="Title" style="width:100%;margin-bottom:0.5rem" />
-            <textarea id="doc-content" placeholder="Write markdown…"></textarea>
+            <label class="field-label" for="doc-content">Markdown source</label>
+            <textarea id="doc-content" placeholder="Write markdown…" spellcheck="false"></textarea>
             <div class="form-row" style="margin-top:0.5rem">
               <button type="button" id="btn-doc-save">Save</button>
+              <button type="button" class="secondary" id="btn-doc-download">Download .md</button>
               <button type="button" class="secondary" id="btn-doc-new">New</button>
               <button type="button" class="secondary" id="btn-doc-delete">Delete</button>
             </div>

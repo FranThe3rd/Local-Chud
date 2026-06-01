@@ -113,8 +113,27 @@ export async function selectSession(id) {
   return data;
 }
 
+export async function deleteAllSessions() {
+  if (!confirm("Delete all chats? This cannot be undone.")) return;
+
+  const res = await apiFetch("/api/sessions", { method: "DELETE" });
+  await parseJson(res);
+
+  currentSessionId = null;
+  const ul = document.getElementById("session-list");
+  if (ul) ul.innerHTML = "";
+
+  await createSession();
+}
+
 export function initSessions() {
   document.getElementById("btn-new-chat")?.addEventListener("click", () => createSession());
+  document.getElementById("btn-delete-all-chats")?.addEventListener("click", () => {
+    deleteAllSessions().catch((e) => console.error("deleteAllSessions:", e));
+  });
+  window.addEventListener("localchud:sessions-refresh", () => {
+    loadSessions().catch((e) => console.error("sessions refresh:", e));
+  });
   readyPromise = loadSessions().catch((e) => {
     console.error("initSessions:", e);
   });

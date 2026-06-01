@@ -1,6 +1,19 @@
 import { apiFetch } from "./api.js";
+import { slugifyFilename } from "./markdown-doc.js";
 
 let currentDocId = null;
+
+function downloadCurrentDocument() {
+  const title = document.getElementById("doc-title")?.value?.trim() || "document";
+  const content = document.getElementById("doc-content")?.value ?? "";
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${slugifyFilename(title)}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 async function loadList() {
   const res = await apiFetch("/api/documents");
@@ -60,6 +73,11 @@ export async function initDocuments() {
     document.getElementById("doc-title").value = "";
     document.getElementById("doc-content").value = "";
     await loadList();
+  });
+
+  document.getElementById("btn-doc-download")?.addEventListener("click", () => {
+    if (!currentDocId) return;
+    downloadCurrentDocument();
   });
 }
 

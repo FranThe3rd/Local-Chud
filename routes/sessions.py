@@ -59,6 +59,15 @@ def create_session(
     return SessionOut.model_validate(s)
 
 
+@router.delete("")
+def delete_all_sessions(
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    deleted = chat_service.delete_all_sessions(db, user)
+    return {"ok": True, "deleted": deleted}
+
+
 @router.get("/{session_id}")
 def get_session(
     session_id: int,

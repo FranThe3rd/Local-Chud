@@ -70,3 +70,36 @@ def add_message(
 
 def get_messages(db: Session, session: ChatSession) -> list[Message]:
     return db.query(Message).filter(Message.session_id == session.id).order_by(Message.created_at).all()
+
+
+def maybe_autotitle_session(
+    db: Session,
+    session: ChatSession,
+    user_message: str,
+    assistant_message: str,
+    max_len: int = 48,
+) -> None:
+    """Derive a short session title from the first exchange."""
+    source = (user_message or "").strip().replace("\n", " ")
+    if not source:
+        source = (assistant_message or "").strip().replace("\n", " ")
+    if not source:
+        return
+    title = source[:max_len].strip()
+    if len(source) > max_len:
+        title = title.rsplit(" ", 1)[0] + "…" if " " in title else title + "…"
+    session.title = title or session.title
+    db.commit()
+
+
+def delete_all_sessions(db: Session, user: User) -> int:
+    sessions = list_sessions(db, user)
+    if not sessions:
+        return 0
+    for s in sessions:
+        s.parent_id = None
+    db.flush()
+    for s in sessions:
+        db.delete(s)
+    db.commit()
+    return len(sessions)

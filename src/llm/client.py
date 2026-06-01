@@ -32,10 +32,19 @@ class LLMClient:
             return f"{self.base_url}/api/chat"
         return f"{self.base_url}/v1/chat/completions"
 
-    def _build_payload(self, messages: list[dict[str, str]], stream: bool) -> dict[str, Any]:
-        if self.provider == "ollama":
-            return {"model": self.model, "messages": messages, "stream": stream}
-        return {"model": self.model, "messages": messages, "stream": stream}
+    def _build_payload(
+        self,
+        messages: list[dict[str, str]],
+        stream: bool,
+        temperature: float | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"model": self.model, "messages": messages, "stream": stream}
+        if temperature is not None:
+            if self.provider == "ollama":
+                payload["options"] = {"temperature": temperature}
+            else:
+                payload["temperature"] = temperature
+        return payload
 
     async def list_models(self) -> list[str]:
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -52,13 +61,18 @@ class LLMClient:
             data = r.json()
             return [m.get("id", "") for m in data.get("data", [])]
 
-    async def chat_stream(self, messages: list[dict[str, str]]) -> AsyncIterator[str]:
+    async def chat_stream(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        temperature: float | None = 0.65,
+    ) -> AsyncIterator[str]:
         async with httpx.AsyncClient(timeout=120.0) as client:
             async with client.stream(
                 "POST",
                 self._chat_url(),
                 headers=self._headers(),
-                json=self._build_payload(messages, stream=True),
+                json=self._build_payload(messages, stream=True, temperature=temperature),
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():

@@ -59,7 +59,7 @@ async function main() {
   initCookbook();
   setOnSessionChange(renderMessages);
   await initSessions();
-  initChat();
+  await initChat();
   showPanel("chat");
   await refreshHeaderFromSettings();
   document.getElementById("btn-logout")?.addEventListener("click", logout);

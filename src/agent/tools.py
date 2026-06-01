@@ -1,4 +1,4 @@
-"""Agent tools — MVP: read_file."""
+"""Agent tools — workspace, web, documents, memory."""
 
 from __future__ import annotations
 
@@ -6,14 +6,16 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+from sqlalchemy.orm import Session
 
 from core.config import get_settings
+from core.db import User
+from services import document_service, memory_service
 
 WORKSPACE = Path(__file__).resolve().parent.parent.parent
 
 
 def _safe_path(path: str) -> Path:
-    """Resolve path within project workspace; block traversal."""
     base = WORKSPACE.resolve()
     resolved = (base / path).resolve()
     if not str(resolved).startswith(str(base)):
@@ -72,10 +74,40 @@ def tool_web_search(query: str, limit: int = 5) -> dict[str, Any]:
         return {"ok": False, "error": str(e), "hint": "Start SearXNG (docker compose) for web search."}
 
 
+def tool_save_document(
+    db: Session,
+    user: User,
+    title: str,
+    content: str,
+) -> dict[str, Any]:
+    title = (title or "Untitled").strip()[:256]
+    content = content or ""
+    if not content.strip():
+        return {"ok": False, "error": "content is empty"}
+    doc = document_service.create_document(db, user, title, content, "markdown")
+    return {"ok": True, "id": doc.id, "title": doc.title}
+
+
+def tool_list_memories(user_id: int, limit: int = 20) -> dict[str, Any]:
+    items = memory_service.list_memories(user_id)[:limit]
+    return {
+        "ok": True,
+        "memories": [{"id": m.get("id"), "content": m.get("content"), "tags": m.get("tags", [])} for m in items],
+    }
+
+
+def tool_list_documents(db: Session, user: User, limit: int = 20) -> dict[str, Any]:
+    docs = document_service.list_documents(db, user)[:limit]
+    return {
+        "ok": True,
+        "documents": [{"id": d.id, "title": d.title, "updated_at": str(d.updated_at)} for d in docs],
+    }
+
+
 TOOL_DEFINITIONS = [
     {
         "name": "read_file",
-        "description": "Read a text file from the workspace. Path is relative to project root.",
+        "description": "Read a text file from the workspace (path relative to project root).",
         "parameters": {
             "type": "object",
             "properties": {"path": {"type": "string", "description": "Relative file path"}},
@@ -84,22 +116,67 @@ TOOL_DEFINITIONS = [
     },
     {
         "name": "web_search",
-        "description": "Search the web via SearXNG. Returns titles, URLs, snippets.",
+        "description": "Search the web via SearXNG for current info, docs, or facts.",
         "parameters": {
             "type": "object",
             "properties": {"query": {"type": "string", "description": "Search query"}},
             "required": ["query"],
         },
     },
+    {
+        "name": "save_document",
+        "description": "Save markdown to the user's Documents library.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Document title"},
+                "content": {"type": "string", "description": "Full markdown body"},
+            },
+            "required": ["title", "content"],
+        },
+    },
+    {
+        "name": "list_memories",
+        "description": "List facts stored about the user (preferences, context).",
+        "parameters": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "list_documents",
+        "description": "List the user's saved documents (title and id).",
+        "parameters": {"type": "object", "properties": {}},
+    },
 ]
 
 
-def run_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+def run_tool(
+    name: str,
+    arguments: dict[str, Any],
+    *,
+    db: Session | None = None,
+    user: User | None = None,
+) -> dict[str, Any]:
     try:
         if name == "read_file":
             return tool_read_file(arguments.get("path", ""))
         if name == "web_search":
             return tool_web_search(arguments.get("query", ""))
+        if name == "save_document":
+            if not db or not user:
+                return {"ok": False, "error": "save_document requires auth context"}
+            return tool_save_document(
+                db,
+                user,
+                arguments.get("title", "Untitled"),
+                arguments.get("content", ""),
+            )
+        if name == "list_memories":
+            if not user:
+                return {"ok": False, "error": "list_memories requires auth context"}
+            return tool_list_memories(user.id)
+        if name == "list_documents":
+            if not db or not user:
+                return {"ok": False, "error": "list_documents requires auth context"}
+            return tool_list_documents(db, user)
         return {"ok": False, "error": f"Unknown tool: {name}"}
     except PermissionError as e:
         return {"ok": False, "error": str(e)}

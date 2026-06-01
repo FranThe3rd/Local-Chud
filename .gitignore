@@ -21,6 +21,8 @@ htmlcov/
 
 # Node (optional tests)
 node_modules/
+frontend/node_modules/
+static/js/chat-bundle.js
 
 # IDE / OS
 .idea/
