@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -9,11 +10,13 @@ export default defineConfig({
   build: {
     outDir: "../static/js",
     emptyOutDir: false,
+    lib: {
+      entry: resolve(__dirname, "src/main.jsx"),
+      formats: ["es"],
+      fileName: () => "chat-bundle.js",
+    },
     rollupOptions: {
-      input: "src/main.jsx",
       output: {
-        entryFileNames: "chat-bundle.js",
-        format: "es",
         inlineDynamicImports: true,
       },
     },

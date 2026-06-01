@@ -1,4 +1,5 @@
 import { asText } from "../lib/text.js";
+import { MarkdownBody } from "./MarkdownBody.jsx";
 
 export function MessageBubble({ message, onSaveDocument }) {
   const isUser = message.role === "user";
@@ -14,7 +15,7 @@ export function MessageBubble({ message, onSaveDocument }) {
       <div className={`content${streaming ? " is-streaming" : ""}`}>
         {isUser && raw}
         {!isUser && (raw.length > 0 || streaming) && (
-          <pre className="reply-text">{raw || "…"}</pre>
+          <MarkdownBody source={raw} streaming={streaming} />
         )}
         {!isUser && !streaming && !raw.length && (
           <span className="no-reply">No response</span>

@@ -363,6 +363,17 @@ main.workspace {
   line-height: 1.5;
 }
 
+.message .markdown-body .wmde-markdown {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent !important;
+}
+
+.message .markdown-body .wmde-markdown pre {
+  margin: 0.5rem 0;
+}
+
 .message .content .streaming-plain {
   white-space: pre-wrap;
   word-break: break-word;
