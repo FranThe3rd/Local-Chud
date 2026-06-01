@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# local chud â€” stop anything on the app port, then start uvicorn.
+# local chud Ñ stop anything on the app port, then start uvicorn.
 set -euo pipefail
-
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
-
 PORT="${LOCALCHUD_PORT:-${KEELHOUSE_PORT:-${BETTERCHATBOTS_PORT:-7001}}}"
 HOST="${LOCALCHUD_HOST:-127.0.0.1}"
-
 if [[ ! -f .env ]]; then
   cp .env.example .env 2>/dev/null || true
 fi
@@ -20,32 +17,27 @@ if [[ -f .env ]]; then
   [[ -z "$val" ]] && val="$(grep -E '^KEELHOUSE_PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d \"'\"' | tr -d ' ')"
   [[ -n "$val" ]] && PORT="$val"
 fi
-
 export AUTO_LOGIN=true
 if [[ -f .env ]] && ! grep -qE '^AUTO_LOGIN=' .env 2>/dev/null; then
   echo "AUTO_LOGIN=true" >> .env
 fi
-
 echo "local chud"
 echo "   port: $PORT"
-
 # Ollama: install if missing, start serve only if API is down
 OLLAMA_URL="${OLLAMA_BASE_URL:-http://127.0.0.1:11434}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2}"
 export PATH="/opt/homebrew/bin:/usr/local/bin:${PATH:-}"
-
 ollama_api_ok() {
   curl -sf "${OLLAMA_URL%/}/api/tags" >/dev/null 2>&1
 }
-
 install_ollama() {
-  echo "   Ollama: not found â€” installingâ€¦"
+  echo "   Ollama: not found Ñ installingÉ"
   if command -v brew >/dev/null 2>&1; then
     brew install ollama
   else
     curl -fsSL https://ollama.com/install.sh | sh
   fi
 }
-
 ensure_ollama() {
   if command -v ollama >/dev/null 2>&1; then
     echo "   Ollama: installed"
@@ -55,10 +47,9 @@ ensure_ollama() {
     echo "   Ollama: install done"
     return 0
   fi
-  echo "   Ollama: install failed â€” https://ollama.com/download"
+  echo "   Ollama: install failed Ñ https://ollama.com/download"
   return 1
 }
-
 start_ollama_if_needed() {
   if ollama_api_ok; then
     echo "   Ollama: already running (skip serve)"
@@ -67,7 +58,7 @@ start_ollama_if_needed() {
   if ! command -v ollama >/dev/null 2>&1; then
     return 1
   fi
-  echo "   Ollama: not running â€” starting ollama serve (background)â€¦"
+  echo "   Ollama: not running Ñ starting ollama serve (background)É"
   mkdir -p data
   nohup ollama serve >>"${ROOT}/data/ollama.log" 2>&1 &
   echo "$!" > "${ROOT}/data/.ollama-serve.pid"
@@ -79,14 +70,37 @@ start_ollama_if_needed() {
   if ollama_api_ok; then
     echo "   Ollama: ready at ${OLLAMA_URL}"
   else
-    echo "   Ollama: still waking up â€” try: ollama serve (or open Ollama.app on Mac)"
+    echo "   Ollama: still waking up Ñ try: ollama serve (or open Ollama.app on Mac)"
     echo "   log: ${ROOT}/data/ollama.log"
   fi
 }
-
+ensure_model_pulled() {
+  local model="$1"
+  if ! command -v ollama >/dev/null 2>&1; then
+    echo "   model pull: ollama not available Ñ skipping"
+    return 1
+  fi
+  if ! ollama_api_ok; then
+    echo "   model pull: Ollama API not reachable Ñ skipping pull of ${model}"
+    return 1
+  fi
+  # Check if model is already present via the API tags list
+  if curl -sf "${OLLAMA_URL%/}/api/tags" 2>/dev/null \
+      | grep -q "\"${model}"; then
+    echo "   model: ${model} already pulled"
+    return 0
+  fi
+  echo "   model: ${model} not found Ñ pulling (this may take a while)É"
+  if ollama pull "${model}"; then
+    echo "   model: ${model} ready"
+  else
+    echo "   model: pull failed for ${model} Ñ you can retry with: ollama pull ${model}"
+    return 1
+  fi
+}
 ensure_ollama || true
 start_ollama_if_needed || true
-
+ensure_model_pulled "${OLLAMA_MODEL}" || true
 free_port() {
   local p="$1"
   local pids
@@ -99,29 +113,24 @@ free_port() {
     [[ -n "$pids" ]] && kill -9 $pids 2>/dev/null || true
   fi
 }
-
 free_port "$PORT"
-
 if [[ ! -d .venv ]]; then
-  echo "   creating venvâ€¦"
+  echo "   creating venvÉ"
   python3 -m venv .venv
   .venv/bin/pip install -q -r requirements.txt
   python3 setup.py
 fi
-
 source .venv/bin/activate
 mkdir -p data
-
 if [[ -f frontend/package.json ]]; then
   if [[ ! -d frontend/node_modules ]]; then
-    echo "   chat UI: installing frontend depsâ€¦"
-    (cd frontend && npm install --silent) || echo "   chat UI: npm install failed â€” vanilla chat fallback"
+    echo "   chat UI: installing frontend depsÉ"
+    (cd frontend && npm install --silent) || echo "   chat UI: npm install failed Ñ vanilla chat fallback"
   fi
   if command -v npm >/dev/null 2>&1; then
     (cd frontend && npm run build --silent) && echo "   chat UI: Motion bundle built" || echo "   chat UI: build skipped"
   fi
 fi
-
-echo "   â†’ http://${HOST}:${PORT}"
+echo "   ? http://${HOST}:${PORT}"
 echo ""
 exec uvicorn app:app --reload --host "$HOST" --port "$PORT"
