@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#282c34" />
+  <title>local chud</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/static/style.css?v={{ASSETS_V}}" />
+  <script nonce="{{CSP_NONCE}}">
+    (function () {
+      var t = localStorage.getItem("localchud-theme") || localStorage.getItem("keelhouse-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <button type="button" class="menu-toggle secondary" id="menu-toggle" aria-label="Menu">☰</button>
+      <div>
+        <div class="logo">local chud</div>
+        <div class="logo-sub">local-first · slightly janky</div>
+      </div>
+      <span id="header-model" class="model-pill">model …</span>
+      <span class="spacer"></span>
+      <button type="button" class="secondary" id="theme-toggle" title="Theme">◐</button>
+      <button type="button" class="secondary" id="btn-settings">⚙ Settings</button>
+      <button type="button" class="secondary" id="btn-logout">Logout</button>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+      <pre class="boat-art" aria-hidden="true">     |\
+    |#&gt;  ~ slightly janky ~
+   /___\</pre>
+      <section>
+        <h3 data-collapse="sessions">▾ Chats</h3>
+        <ul id="session-list"></ul>
+        <button type="button" class="secondary" id="btn-new-chat" style="width:100%;margin-top:0.5rem">+ New chat</button>
+      </section>
+      <section>
+        <h3 data-collapse="nav">▾ Workspace</h3>
+        <ul id="nav-features">
+          <li data-panel="chat" class="active"><span class="nav-icon">💬</span> Chat</li>
+          <li data-panel="documents"><span class="nav-icon">📄</span> Documents</li>
+          <li data-panel="memory"><span class="nav-icon">🧠</span> Memory</li>
+          <li data-panel="research"><span class="nav-icon">🔍</span> Research</li>
+          <li data-panel="compare"><span class="nav-icon">⚖</span> Compare</li>
+          <li data-panel="cookbook"><span class="nav-icon">📦</span> Cookbook</li>
+          <li data-panel="tasks"><span class="nav-icon">✓</span> Tasks</li>
+          <li data-panel="email"><span class="nav-icon">✉</span> Email</li>
+          <li data-panel="calendar"><span class="nav-icon">📅</span> Calendar</li>
+        </ul>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <div id="chat-panel" class="panel active">
+        <div id="chat-messages"></div>
+        <div id="chat-input-area">
+          <label class="checkbox-row">
+            <input type="checkbox" id="agent-mode" />
+            Agent
+          </label>
+          <textarea id="chat-input" rows="2" placeholder="Message… (Agent: read_file, web_search)"></textarea>
+          <button type="button" id="btn-send">Send</button>
+          <button type="button" class="secondary" id="btn-stop" disabled>Stop</button>
+        </div>
+      </div>
+
+      <div id="settings-panel" class="panel">
+        <div class="panel-header">
+          <h2>Settings</h2>
+          <p>LLM providers — Ollama, OpenAI-compatible APIs</p>
+        </div>
+        <div class="panel-body">
+          <form id="settings-form">
+            <div class="form-group">
+              <label for="provider">Provider</label>
+              <select id="provider" name="provider">
+                <option value="ollama">Ollama</option>
+                <option value="openai">OpenAI-compatible</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="base_url">Base URL</label>
+              <input id="base_url" name="base_url" placeholder="http://127.0.0.1:11434" />
+            </div>
+            <div class="form-group">
+              <label for="model">Model</label>
+              <select id="model" name="model"></select>
+              <button type="button" class="secondary" id="btn-refresh-models" style="margin-top:0.5rem">Refresh models</button>
+            </div>
+            <div class="form-group">
+              <label for="api_key">API Key (optional)</label>
+              <input id="api_key" name="api_key" type="password" placeholder="Leave blank to keep" />
+            </div>
+            <button type="submit">Save settings</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="documents-panel" class="panel">
+        <div class="panel-header">
+          <h2>Documents</h2>
+          <p>Markdown notes in your workspace DB</p>
+        </div>
+        <div class="panel-body split-view">
+          <div class="doc-list" id="doc-list"></div>
+          <div class="editor-area">
+            <input type="text" id="doc-title" placeholder="Title" style="width:100%;margin-bottom:0.5rem" />
+            <textarea id="doc-content" placeholder="Write markdown…"></textarea>
+            <div class="form-row" style="margin-top:0.5rem">
+              <button type="button" id="btn-doc-save">Save</button>
+              <button type="button" class="secondary" id="btn-doc-new">New</button>
+              <button type="button" class="secondary" id="btn-doc-delete">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="memory-panel" class="panel">
+        <div class="panel-header">
+          <h2>Memory</h2>
+          <p>Facts the agent can recall (local JSON, per user)</p>
+        </div>
+        <div class="panel-body">
+          <div class="form-row">
+            <input type="text" id="memory-input" placeholder="Remember that…" style="flex:1" />
+            <button type="button" id="btn-memory-add">Add</button>
+          </div>
+          <div id="memory-list" style="margin-top:1rem"></div>
+        </div>
+      </div>
+
+      <div id="research-panel" class="panel">
+        <div class="panel-header">
+          <h2>Research</h2>
+          <p>Web search via SearXNG (docker compose)</p>
+        </div>
+        <div class="panel-body">
+          <div class="form-row">
+            <input type="text" id="research-query" placeholder="Search the web…" style="flex:1" />
+            <button type="button" id="btn-research">Search</button>
+          </div>
+          <div id="research-results" class="search-results" style="margin-top:1rem"></div>
+        </div>
+      </div>
+
+      <div id="compare-panel" class="panel">
+        <div class="panel-header">
+          <h2>Compare</h2>
+          <p>Run the same prompt on two models</p>
+        </div>
+        <div class="panel-body">
+          <textarea id="compare-prompt" rows="3" placeholder="Prompt for both models…" style="width:100%"></textarea>
+          <div class="form-row" style="margin:0.5rem 0">
+            <input id="compare-model-b" placeholder="Model B (optional, defaults to A)" style="flex:1" />
+            <button type="button" id="btn-compare-run">Run compare</button>
+          </div>
+          <div class="compare-columns">
+            <div><strong>Model A</strong><div id="compare-a" class="compare-col">—</div></div>
+            <div><strong>Model B</strong><div id="compare-b" class="compare-col">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cookbook-panel" class="panel">
+        <div class="panel-header">
+          <h2>Cookbook</h2>
+          <p>Hardware scan &amp; local model ops</p>
+        </div>
+        <div class="panel-body">
+          <div id="cookbook-cards" class="card-grid"></div>
+        </div>
+      </div>
+
+      <div id="tasks-panel" class="panel">
+        <div class="panel-header">
+          <h2>Tasks</h2>
+          <p>Simple todos — agent can use these later</p>
+        </div>
+        <div class="panel-body">
+          <div class="form-row">
+            <input type="text" id="task-input" placeholder="New task…" style="flex:1" />
+            <button type="button" id="btn-task-add">Add</button>
+          </div>
+          <div id="task-list" style="margin-top:1rem"></div>
+        </div>
+      </div>
+
+      <div id="email-panel" class="panel">
+        <div class="panel-header">
+          <h2>Email</h2>
+          <p>IMAP/SMTP — planned</p>
+        </div>
+        <div class="panel-body" id="email-body"></div>
+      </div>
+
+      <div id="calendar-panel" class="panel">
+        <div class="panel-header">
+          <h2>Calendar</h2>
+          <p>CalDAV — planned</p>
+        </div>
+        <div class="panel-body" id="calendar-body"></div>
+      </div>
+    </main>
+
+    <footer class="status-bar">
+      <span><span class="status-dot" id="status-ollama"></span>Ollama</span>
+      <span><span class="status-dot" id="status-app"></span>App</span>
+      <span id="status-msg">ready</span>
+    </footer>
+  </div>
+
+  <script type="importmap" nonce="{{CSP_NONCE}}">
+  {
+    "imports": {
+      "/static/js/chat.js": "/static/js/chat-v2.js",
+      "/static/js/sessions.js": "/static/js/sessions-v2.js"
+    }
+  }
+  </script>
+  <script type="module" src="/static/main.js?v={{ASSETS_V}}" nonce="{{CSP_NONCE}}"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>login — local chud</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script nonce="{{CSP_NONCE}}">
+    (function () {
+      var t = localStorage.getItem("localchud-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <h1>local chud</h1>
+    <p class="sub">local-first · slightly janky · yours</p>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" value="admin" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit">Sign in</button>
+      <p id="login-error" class="error" hidden></p>
+    </form>
+  </div>
+  <script type="module" nonce="{{CSP_NONCE}}">
+    import { apiFetch } from "/static/js/api.js";
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.hidden = true;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      try {
+        const res = await apiFetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || "Login failed");
+        }
+        window.location.href = "/";
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>

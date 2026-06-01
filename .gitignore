@@ -1,0 +1,33 @@
+# Data & secrets
+data/
+.env
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (optional tests)
+node_modules/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+Thumbs.db
+
+# Docker volumes
+chroma_data/
