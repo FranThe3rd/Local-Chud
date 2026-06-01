@@ -1,6 +1,6 @@
 # Local Chud
 
-A local-first AI goyslop vibe coded workspace powered by Ollama. Basically copying Pewdiepie's project...
+This is an AI goyslop vibe coded project powered by Ollama. Basically copying Pewdiepie's project...
 
 Run large language models on your own machine with a modern chat interface, memory, document support, research tools, and agent capabilities — no cloud required.
 
