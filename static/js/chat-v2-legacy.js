@@ -4,13 +4,23 @@ import {
   shouldRenderAsDocument,
   titleFromMarkdown,
 } from "./markdown-doc.js";
-import { renderMarkdown } from "./markdown-render.js";
 import { ensureActiveSession } from "./sessions-v2.js";
 
 let abortController = null;
 
+function asText(value) {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object" && typeof value.content === "string") return value.content;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
 async function saveDocumentFromMarkdown(markdown, fallbackTitle) {
-  const body = extractMarkdownBody(markdown);
+  const body = extractMarkdownBody(asText(markdown));
   const title = titleFromMarkdown(body) || fallbackTitle || "Untitled";
   const res = await apiFetch("/api/documents", {
     method: "POST",
@@ -24,18 +34,15 @@ async function saveDocumentFromMarkdown(markdown, fallbackTitle) {
   return res.json();
 }
 
-async function finalizeDocumentMessage(contentEl, fullText, userText) {
-  const md = extractMarkdownBody(fullText);
-  try {
-    await renderMarkdown(contentEl, md);
-  } catch (e) {
-    console.error("markdown render:", e);
-    contentEl.textContent = fullText;
-  }
+function setAssistantContent(contentEl, fullText) {
+  contentEl.textContent = asText(fullText);
+}
 
-  const message = contentEl.closest(".message");
-  if (!message || message.querySelector(".message-actions")) return;
+function addSaveButton(message, fullText, userText) {
+  if (!shouldRenderAsDocument(userText, fullText)) return;
+  if (message.querySelector(".message-actions")) return;
 
+  const md = extractMarkdownBody(asText(fullText));
   const actions = document.createElement("div");
   actions.className = "message-actions";
   const btn = document.createElement("button");
@@ -63,16 +70,15 @@ export async function renderMessages(messages) {
   container.innerHTML = "";
   let lastUserText = "";
   for (const m of messages) {
+    const content = asText(m?.content);
     if (m.role === "user") {
-      lastUserText = m.content;
-      appendMessage(m.role, m.content, false);
+      lastUserText = content;
+      appendMessage(m.role, content, false);
     } else if (m.role === "assistant") {
-      const { contentEl } = appendMessage(m.role, m.content, false);
-      if (shouldRenderAsDocument(lastUserText, m.content)) {
-        await finalizeDocumentMessage(contentEl, m.content, lastUserText);
-      }
+      const { contentEl, div } = appendMessage(m.role, content, false);
+      addSaveButton(div, content, lastUserText);
     } else {
-      appendMessage(m.role, m.content, false);
+      appendMessage(m.role, content, false);
     }
   }
   container.scrollTop = container.scrollHeight;
@@ -84,7 +90,7 @@ function appendMessage(role, content, scroll = true) {
   div.className = `message ${role}`;
   div.innerHTML = `<div class="role">${role}</div><div class="content"></div>`;
   const contentEl = div.querySelector(".content");
-  contentEl.textContent = content || "";
+  contentEl.textContent = asText(content);
   container.appendChild(div);
   if (scroll) container.scrollTop = container.scrollHeight;
   return { contentEl, div };
@@ -94,7 +100,7 @@ function appendToolEvent(text) {
   const container = document.getElementById("chat-messages");
   const el = document.createElement("div");
   el.className = "tool-event";
-  el.textContent = text;
+  el.textContent = asText(text);
   container.appendChild(el);
   container.scrollTop = container.scrollHeight;
 }
@@ -111,20 +117,28 @@ function extractSseData(block) {
 }
 
 function processSsePayload(payload, assistantEl, state) {
-  if (payload.type === "token" && typeof payload.content === "string") {
-    state.full += payload.content;
-    assistantEl.textContent = state.full;
+  const p = payload && typeof payload === "object" ? payload : {};
+  if (p.type === "token") {
+    const piece = asText(p.content);
+    if (piece) state.full += piece;
+    setAssistantContent(assistantEl, state.full);
     document.getElementById("chat-messages").scrollTop =
       document.getElementById("chat-messages").scrollHeight;
-  } else if (payload.type === "tool_start") {
-    appendToolEvent(`🔧 ${payload.name}(${JSON.stringify(payload.arguments)})`);
-  } else if (payload.type === "tool_result") {
-    const preview = JSON.stringify(payload.result).slice(0, 200);
-    appendToolEvent(`↳ ${payload.name}: ${preview}…`);
-  } else if (payload.type === "error") {
-    assistantEl.textContent = state.full
-      ? `${state.full}\n[error] ${payload.content}`
-      : String(payload.content);
+  } else if (p.type === "done") {
+    const full = asText(p.content);
+    if (full) state.full = full;
+    setAssistantContent(assistantEl, state.full);
+  } else if (p.type === "tool_start") {
+    appendToolEvent(`🔧 ${asText(p.name)}(${JSON.stringify(p.arguments ?? {})})`);
+  } else if (p.type === "tool_result") {
+    const preview = asText(JSON.stringify(p.result ?? {})).slice(0, 200);
+    appendToolEvent(`↳ ${asText(p.name)}: ${preview}…`);
+  } else if (p.type === "error") {
+    const errMsg = asText(p.content);
+    setAssistantContent(
+      assistantEl,
+      state.full ? `${state.full}\n[error] ${errMsg}` : errMsg
+    );
   }
 }
 
@@ -154,8 +168,9 @@ export async function sendMessage(text, agentMode) {
     return;
   }
 
-  appendMessage("user", text);
-  const { contentEl: assistantEl } = appendMessage("assistant", "…");
+  const userText = asText(text);
+  appendMessage("user", userText);
+  const { contentEl: assistantEl, div: assistantDiv } = appendMessage("assistant", "…");
   const state = { full: "" };
 
   abortController = new AbortController();
@@ -169,7 +184,7 @@ export async function sendMessage(text, agentMode) {
       credentials: "same-origin",
       body: JSON.stringify({
         session_id: sessionId,
-        message: text,
+        message: userText,
         agent_mode: agentMode,
       }),
       signal: abortController.signal,
@@ -181,7 +196,7 @@ export async function sendMessage(text, agentMode) {
     }
     if (!res.ok) {
       const err = await res.text();
-      assistantEl.textContent = `Error: ${err}`;
+      setAssistantContent(assistantEl, `Error: ${asText(err)}`);
       return;
     }
 
@@ -197,20 +212,24 @@ export async function sendMessage(text, agentMode) {
     }
     buffer = drainSseBuffer(buffer + "\n\n", assistantEl, state);
 
-    if (!state.full) {
-      assistantEl.textContent =
-        "No reply from model. Check Settings (model name) and that Ollama is running.";
-    } else if (shouldRenderAsDocument(text, state.full)) {
-      await finalizeDocumentMessage(assistantEl, state.full, text);
+    const finalText = asText(state.full);
+    if (!finalText) {
+      setAssistantContent(
+        assistantEl,
+        "No reply from model. Check Settings (model name) and that Ollama is running."
+      );
+    } else {
+      setAssistantContent(assistantEl, finalText);
+      addSaveButton(assistantDiv, finalText, userText);
     }
     window.dispatchEvent(new CustomEvent("localchud:sessions-refresh"));
   } catch (err) {
     if (err.name !== "AbortError") {
-      assistantEl.textContent = state.full || `Failed: ${err.message}`;
+      setAssistantContent(assistantEl, state.full || asText(err.message));
     }
   } finally {
-    document.getElementById("btn-send")?.removeAttribute?.("disabled");
-    document.getElementById("btn-stop")?.setAttribute?.("disabled", "");
+    document.getElementById("btn-send")?.removeAttribute("disabled");
+    document.getElementById("btn-stop")?.setAttribute("disabled", "");
     abortController = null;
   }
 }
@@ -225,7 +244,7 @@ export function initChat() {
     try {
       await sendMessage(text, agentMode);
     } catch (err) {
-      appendMessage("assistant", err.message || String(err));
+      appendMessage("assistant", asText(err.message));
     }
   };
 

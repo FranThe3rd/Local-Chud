@@ -341,8 +341,36 @@ main.workspace {
   flex-shrink: 0;
 }
 
+.message-markdown .content,
 .message-document .content {
   white-space: normal;
+}
+
+.message .content .reply-text {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+  color: var(--text-bright);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: transparent;
+  border: none;
+}
+
+.message .markdown-body {
+  color: var(--text-bright);
+  line-height: 1.5;
+}
+
+.message .content .streaming-plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message .content .no-reply {
+  color: var(--text-dim);
+  font-style: italic;
 }
 
 .markdown-body h1,
@@ -543,7 +571,7 @@ main.workspace {
   border-color: var(--accent-dim);
 }
 
-.message.assistant .content:empty::before {
+.message.assistant .content.is-streaming:empty::before {
   content: "…";
   opacity: 0.5;
 }

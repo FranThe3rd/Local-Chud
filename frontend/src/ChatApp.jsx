@@ -8,6 +8,7 @@ import {
   shouldRenderAsDocument,
   titleFromMarkdown,
 } from "./lib/markdown-doc.js";
+import { asText } from "./lib/text.js";
 
 let idSeq = 1;
 const nextId = () => `m-${idSeq++}`;
@@ -15,26 +16,25 @@ const nextId = () => `m-${idSeq++}`;
 function normalizeLoadedMessages(messages) {
   let lastUser = "";
   return messages.map((m) => {
+    const content = asText(m?.content);
     if (m.role === "user") {
-      lastUser = m.content;
-      return { kind: "message", id: nextId(), role: "user", content: m.content };
+      lastUser = content;
+      return { kind: "message", id: nextId(), role: "user", content };
     }
     if (m.role === "assistant") {
-      const asDoc = shouldRenderAsDocument(lastUser, m.content);
-      const md = extractMarkdownBody(m.content);
+      const asDoc = shouldRenderAsDocument(lastUser, content);
       return {
         kind: "message",
         id: nextId(),
         role: "assistant",
-        content: m.content,
+        content,
         renderAsDocument: asDoc,
-        markdownBody: asDoc ? md : undefined,
         showSave: asDoc,
         saved: false,
         lastUserText: lastUser,
       };
     }
-    return { kind: "message", id: nextId(), role: m.role, content: m.content };
+    return { kind: "message", id: nextId(), role: m.role, content };
   });
 }
 
@@ -67,7 +67,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
 
   const saveDocument = useCallback(
     async (message) => {
-      const body = message.markdownBody || extractMarkdownBody(message.content);
+      const body = extractMarkdownBody(asText(message.content));
       const title = titleFromMarkdown(body) || "Untitled";
       const res = await apiFetch("/api/documents", {
         method: "POST",
@@ -84,7 +84,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
 
   const send = useCallback(
     async (textOverride) => {
-      const text = (textOverride ?? input).trim();
+      const text = asText(textOverride ?? input).trim();
       if (!text || busy) return;
 
       const sessionId = await ensureActiveSession();
@@ -105,8 +105,6 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
       setInput("");
       const userId = nextId();
       const assistantId = nextId();
-      const documentMode = shouldRenderAsDocument(text, "");
-
       setItems((prev) => [
         ...prev,
         { kind: "message", id: userId, role: "user", content: text },
@@ -115,7 +113,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
           id: assistantId,
           role: "assistant",
           content: "",
-          renderAsDocument: documentMode,
+          isStreaming: true,
           lastUserText: text,
         },
       ]);
@@ -129,10 +127,13 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
           message: text,
           agentMode,
           onEvent: (payload, state) => {
+            const chunk = asText(state?.full);
             if (payload.type === "token") {
               setItems((prev) =>
                 prev.map((it) =>
-                  it.id === assistantId ? { ...it, content: state.full } : it
+                  it.id === assistantId
+                    ? { ...it, content: chunk, isStreaming: true }
+                    : it
                 )
               );
             } else if (payload.type === "tool_start") {
@@ -141,28 +142,28 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
                 {
                   kind: "tool",
                   id: nextId(),
-                  text: `🔧 ${payload.name}(${JSON.stringify(payload.arguments)})`,
+                  text: `🔧 ${asText(payload.name)}(${JSON.stringify(payload.arguments ?? {})})`,
                 },
               ]);
             } else if (payload.type === "tool_result") {
-              const preview = JSON.stringify(payload.result).slice(0, 200);
+              const preview = asText(JSON.stringify(payload.result ?? {})).slice(0, 200);
               setItems((prev) => [
                 ...prev,
                 {
                   kind: "tool",
                   id: nextId(),
-                  text: `↳ ${payload.name}: ${preview}…`,
+                  text: `↳ ${asText(payload.name)}: ${preview}…`,
                 },
               ]);
             } else if (payload.type === "error") {
+              const errMsg = asText(payload.content);
               setItems((prev) =>
                 prev.map((it) =>
                   it.id === assistantId
                     ? {
                         ...it,
-                        content: state.full
-                          ? `${state.full}\n[error] ${payload.content}`
-                          : String(payload.content),
+                        content: chunk ? `${chunk}\n[error] ${errMsg}` : errMsg,
+                        isStreaming: false,
                       }
                     : it
                 )
@@ -171,44 +172,49 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
           },
         });
 
-        setStreaming(false);
+        if (result.ok) {
+          setItems((prev) => {
+            const current = prev.find((it) => it.id === assistantId);
+            const streamed = asText(current?.content);
+            const finalText = asText(result.full) || streamed;
 
-        if (result.ok && result.full) {
-          const asDoc = shouldRenderAsDocument(text, result.full);
-          const md = extractMarkdownBody(result.full);
-          setItems((prev) =>
-            prev.map((it) =>
+            if (!finalText) {
+              return prev.map((it) =>
+                it.id === assistantId
+                  ? {
+                      ...it,
+                      content:
+                        "No reply from model. Check Settings and that Ollama is running.",
+                      isStreaming: false,
+                    }
+                  : it
+              );
+            }
+
+            const asDoc = shouldRenderAsDocument(text, finalText);
+            return prev.map((it) =>
               it.id === assistantId
                 ? {
                     ...it,
-                    content: result.full,
+                    content: finalText,
                     renderAsDocument: asDoc,
-                    markdownBody: asDoc ? md : undefined,
                     showSave: asDoc,
+                    isStreaming: false,
                   }
                 : it
-            )
-          );
+            );
+          });
+          setStreaming(false);
           window.dispatchEvent(new CustomEvent("localchud:sessions-refresh"));
-        } else if (result.ok && !result.full) {
-          setItems((prev) =>
-            prev.map((it) =>
-              it.id === assistantId
-                ? {
-                    ...it,
-                    content:
-                      "No reply from model. Check Settings and that Ollama is running.",
-                  }
-                : it
-            )
-          );
+        } else {
+          setStreaming(false);
         }
       } catch (err) {
         if (err.name !== "AbortError") {
           setItems((prev) =>
             prev.map((it) =>
               it.id === assistantId
-                ? { ...it, content: err.message || String(err) }
+                ? { ...it, content: asText(err.message), isStreaming: false }
                 : it
             )
           );
