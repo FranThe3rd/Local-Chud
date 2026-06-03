@@ -60,13 +60,16 @@
         <div id="chat-app">
           <div id="chat-messages"></div>
           <div class="chat-input-area" id="chat-fallback-bar">
-            <label class="checkbox-row">
-              <input type="checkbox" id="agent-mode" />
-              Agent
-            </label>
             <textarea id="chat-input" rows="2" placeholder="Message…"></textarea>
-            <button type="button" id="btn-send">Send</button>
-            <button type="button" class="secondary" id="btn-stop" disabled>Stop</button>
+            <div class="chat-input-toolbar">
+              <label class="agent-toggle-btn" id="agent-toggle-label">
+                <input type="checkbox" id="agent-mode" style="display:none" />
+                Agent
+              </label>
+              <span class="spacer"></span>
+              <button type="button" class="secondary btn-with-icon" id="btn-stop" disabled>Stop</button>
+              <button type="button" class="btn-with-icon" id="btn-send">Send</button>
+            </div>
           </div>
         </div>
       </div>

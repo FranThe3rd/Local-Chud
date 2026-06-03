@@ -39,12 +39,16 @@ function normalizeLoadedMessages(messages) {
   });
 }
 
+let attachSeq = 1;
+const nextAttachId = () => `a-${attachSeq++}`;
+
 export function ChatApp({ ensureActiveSession, apiFetch }) {
   const [items, setItems] = useState([]);
   const [input, setInput] = useState("");
   const [agentMode, setAgentMode] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [attachments, setAttachments] = useState([]);
   const listRef = useRef(null);
   const { stream, stop } = useChatStream();
 
@@ -83,10 +87,19 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
     [apiFetch]
   );
 
+  const handleAttach = useCallback((file) => {
+    setAttachments((prev) => [...prev, { id: nextAttachId(), name: file.name, file }]);
+  }, []);
+
+  const handleRemoveAttachment = useCallback((id) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }, []);
+
   const send = useCallback(
     async (textOverride) => {
       const text = asText(textOverride ?? input).trim();
-      if (!text || busy) return;
+      if (!text && attachments.length === 0) return;
+      if (busy) return;
 
       const sessionId = await ensureActiveSession();
       if (!sessionId) {
@@ -103,12 +116,39 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
         return;
       }
 
+      // Upload any attachments and collect their extracted text
+      let fileContext = "";
+      if (attachments.length > 0) {
+        for (const a of attachments) {
+          try {
+            const fd = new FormData();
+            fd.append("file", a.file);
+            const res = await apiFetch("/api/upload", { method: "POST", body: fd });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.text) {
+                fileContext += `\n\n--- File: ${a.name} ---\n${data.text}`;
+              }
+            }
+          } catch {
+            // ignore individual upload errors
+          }
+        }
+      }
+
+      const fullMessage = fileContext ? `${text}\n${fileContext}` : text;
+      const displayText = text || attachments.map((a) => a.name).join(", ");
+
       setInput("");
+      setAttachments([]);
       const userId = nextId();
       const assistantId = nextId();
       setItems((prev) => [
         ...prev,
-        { kind: "message", id: userId, role: "user", content: text },
+        {
+          kind: "message", id: userId, role: "user", content: displayText,
+          attachments: attachments.map((a) => a.name),
+        },
         {
           kind: "message",
           id: assistantId,
@@ -125,7 +165,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
       try {
         const result = await stream({
           sessionId,
-          message: text,
+          message: fullMessage,
           agentMode,
           onEvent: (payload, state) => {
             const chunk = asText(state?.full);
@@ -229,7 +269,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
         setBusy(false);
       }
     },
-    [input, busy, agentMode, ensureActiveSession, stream]
+    [input, busy, agentMode, attachments, ensureActiveSession, stream, apiFetch]
   );
 
   const showSuggestions = items.length === 0 && !busy;
@@ -258,6 +298,9 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
         onAgentModeChange={setAgentMode}
         disabled={busy}
         stopping={busy}
+        attachments={attachments}
+        onAttach={handleAttach}
+        onRemoveAttachment={handleRemoveAttachment}
       />
     </>
   );

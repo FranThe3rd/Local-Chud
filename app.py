@@ -41,6 +41,7 @@ from routes import (
     sessions,
     settings,
     tasks,
+    upload,
 )
 from services.user_service import ensure_admin_user
 
@@ -114,6 +115,7 @@ app.include_router(research.router)
 app.include_router(compare.router)
 app.include_router(cookbook.router)
 app.include_router(integrations.router)
+app.include_router(upload.router)
 
 if STATIC.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
