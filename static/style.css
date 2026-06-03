@@ -262,6 +262,106 @@ aside.sidebar {
   font-size: 0.8rem;
 }
 
+.session-item {
+  position: relative;
+}
+
+.session-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-delete-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.session-item:hover .session-delete-btn,
+.session-item.active .session-delete-btn,
+.session-delete-btn:focus-visible {
+  opacity: 1;
+}
+
+.session-delete-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  filter: none;
+  transform: none;
+}
+
+.session-delete-btn:active {
+  transform: scale(0.94);
+}
+
+.session-item--protected .session-item-label {
+  color: var(--text-dim);
+}
+
+@keyframes sessionItemExit {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 3.25rem;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-14px) scale(0.94);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+@keyframes sessionItemEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.session-item--exit {
+  animation: sessionItemExit 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  overflow: hidden;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+.session-item--enter {
+  animation: sessionItemEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-item--exit,
+  .session-item--enter {
+    animation: none;
+  }
+}
+
 /* Workspace */
 main.workspace {
   grid-row: 2;
@@ -1365,6 +1465,112 @@ button:disabled {
 .form-group textarea {
   width: 100%;
   max-width: 480px;
+}
+
+/* Settings panel */
+.settings-layout {
+  max-width: 640px;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.settings-card {
+  background: color-mix(in srgb, var(--bg-panel) 88%, #000);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow-tight);
+}
+
+.settings-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.settings-card-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.settings-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+}
+
+.settings-card-desc {
+  margin: 0 0 1.1rem;
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.settings-model-row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.settings-model-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-model-row button {
+  flex-shrink: 0;
+}
+
+.settings-status {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.settings-status--ok {
+  color: var(--success);
+}
+
+.settings-status--error {
+  color: var(--accent);
+}
+
+.settings-status--neutral {
+  color: var(--text-dim);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.field-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.field-hint code {
+  font-family: var(--font-mono-ui);
+  font-size: 0.76rem;
+  background: var(--bg-input);
+  padding: 0.08rem 0.32rem;
+  border-radius: 4px;
 }
 
 .form-row {

@@ -93,6 +93,7 @@ def delete_session(
     s = chat_service.get_session(db, user, session_id)
     if not s:
         raise HTTPException(status_code=404, detail="Session not found")
-    db.delete(s)
-    db.commit()
+    if chat_service.is_protected_session(s):
+        raise HTTPException(status_code=400, detail="New chat cannot be deleted")
+    chat_service.delete_session(db, user, session_id)
     return {"ok": True}

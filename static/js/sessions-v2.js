@@ -1,5 +1,7 @@
 import { apiFetch } from "./api.js";
 
+const NEW_CHAT_TITLE = "New chat";
+
 let currentSessionId = null;
 let onSessionChange = null;
 let readyPromise = null;
@@ -10,6 +12,45 @@ export function getCurrentSessionId() {
 
 export function setOnSessionChange(fn) {
   onSessionChange = fn;
+}
+
+function isProtectedSession(session) {
+  return (session.title || "").trim() === NEW_CHAT_TITLE;
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function animateOut(el, { delay = 0 } = {}) {
+  if (!el) return Promise.resolve();
+  if (prefersReducedMotion()) {
+    el.remove();
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    const run = () => {
+      const finish = () => {
+        el.remove();
+        resolve();
+      };
+      el.classList.add("session-item--exit");
+      el.addEventListener("animationend", finish, { once: true });
+      setTimeout(finish, 380);
+    };
+    if (delay) setTimeout(run, delay);
+    else run();
+  });
+}
+
+async function animateAllOut(items) {
+  const list = [...items];
+  if (!list.length) return;
+  if (prefersReducedMotion()) {
+    list.forEach((el) => el.remove());
+    return;
+  }
+  await Promise.all(list.map((el, i) => animateOut(el, { delay: i * 45 })));
 }
 
 async function parseJson(res) {
@@ -32,7 +73,7 @@ export async function loadSessions() {
   }
 
   renderSessionList(sessions);
-  if (!currentSessionId) {
+  if (!currentSessionId || !sessions.some((s) => s.id === currentSessionId)) {
     await selectSession(sessions[0].id);
   }
   return sessions;
@@ -69,20 +110,50 @@ function renderSessionList(sessions) {
   if (!ul) return;
   ul.innerHTML = "";
   sessions.forEach((s) => {
-    const li = document.createElement("li");
-    li.textContent = s.title || `Chat #${s.id}`;
-    li.dataset.id = String(s.id);
-    if (s.id === currentSessionId) li.classList.add("active");
-    li.addEventListener("click", () => selectSession(s.id));
-    ul.appendChild(li);
+    ul.appendChild(createSessionItem(s));
   });
+}
+
+function createSessionItem(session, { animate = false } = {}) {
+  const li = document.createElement("li");
+  li.className = "session-item";
+  li.dataset.id = String(session.id);
+  if (session.id === currentSessionId) li.classList.add("active");
+  if (isProtectedSession(session)) {
+    li.dataset.protected = "true";
+    li.classList.add("session-item--protected");
+  }
+  if (animate) li.classList.add("session-item--enter");
+
+  const label = document.createElement("span");
+  label.className = "session-item-label";
+  label.textContent = session.title || `Chat #${session.id}`;
+  label.title = session.title || `Chat #${session.id}`;
+
+  li.appendChild(label);
+
+  if (!isProtectedSession(session)) {
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "session-delete-btn";
+    del.setAttribute("aria-label", `Delete ${session.title || "chat"}`);
+    del.title = "Delete chat";
+    del.textContent = "×";
+    del.addEventListener("click", (e) => {
+      deleteSession(session.id, e);
+    });
+    li.appendChild(del);
+  }
+
+  li.addEventListener("click", () => selectSession(session.id));
+  return li;
 }
 
 export async function createSession() {
   const res = await apiFetch("/api/sessions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: "New chat" }),
+    body: JSON.stringify({ title: NEW_CHAT_TITLE }),
   });
   const session = await parseJson(res);
   currentSessionId = session.id;
@@ -90,12 +161,7 @@ export async function createSession() {
   const ul = document.getElementById("session-list");
   if (ul) {
     document.querySelectorAll("#session-list li").forEach((li) => li.classList.remove("active"));
-    const li = document.createElement("li");
-    li.textContent = session.title || `Chat #${session.id}`;
-    li.dataset.id = String(session.id);
-    li.classList.add("active");
-    li.addEventListener("click", () => selectSession(session.id));
-    ul.prepend(li);
+    ul.prepend(createSessionItem(session, { animate: true }));
   }
 
   if (onSessionChange) onSessionChange([]);
@@ -113,17 +179,57 @@ export async function selectSession(id) {
   return data;
 }
 
+export async function deleteSession(id, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  const li = document.querySelector(`#session-list li[data-id="${id}"]`);
+  if (li?.dataset.protected === "true") return;
+
+  const title = li?.querySelector(".session-item-label")?.textContent || "this chat";
+  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+
+  const wasActive = currentSessionId === id;
+  const anim = animateOut(li);
+
+  try {
+    const res = await apiFetch(`/api/sessions/${id}`, { method: "DELETE" });
+    await parseJson(res);
+    await anim;
+
+    if (wasActive) {
+      currentSessionId = null;
+      await loadSessions();
+    }
+  } catch (err) {
+    await anim;
+    console.error("deleteSession:", err);
+    await loadSessions();
+  }
+}
+
 export async function deleteAllSessions() {
   if (!confirm("Delete all chats? This cannot be undone.")) return;
 
-  const res = await apiFetch("/api/sessions", { method: "DELETE" });
-  await parseJson(res);
-
-  currentSessionId = null;
   const ul = document.getElementById("session-list");
-  if (ul) ul.innerHTML = "";
+  const items = ul ? [...ul.querySelectorAll("li")] : [];
+  const anim = animateAllOut(items);
 
-  await createSession();
+  try {
+    const res = await apiFetch("/api/sessions", { method: "DELETE" });
+    await parseJson(res);
+    await anim;
+
+    currentSessionId = null;
+    if (ul) ul.innerHTML = "";
+    await createSession();
+  } catch (err) {
+    await anim;
+    console.error("deleteAllSessions:", err);
+    await loadSessions();
+  }
 }
 
 export function initSessions() {

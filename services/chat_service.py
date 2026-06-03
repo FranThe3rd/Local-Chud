@@ -92,6 +92,28 @@ def maybe_autotitle_session(
     db.commit()
 
 
+NEW_CHAT_TITLE = "New chat"
+
+
+def is_protected_session(session: ChatSession) -> bool:
+    return (session.title or "").strip() == NEW_CHAT_TITLE
+
+
+def delete_session(db: Session, user: User, session_id: int) -> bool:
+    s = get_session(db, user, session_id)
+    if not s:
+        return False
+    if is_protected_session(s):
+        return False
+    db.query(ChatSession).filter(
+        ChatSession.user_id == user.id,
+        ChatSession.parent_id == session_id,
+    ).update({ChatSession.parent_id: None})
+    db.delete(s)
+    db.commit()
+    return True
+
+
 def delete_all_sessions(db: Session, user: User) -> int:
     sessions = list_sessions(db, user)
     if not sessions:
