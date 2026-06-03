@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import json
+import logging
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sse_starlette.sse import EventSourceResponse
 
 from core.auth import get_current_user
 from core.db import User, get_db
 from services.settings_service import get_llm_settings, save_llm_settings
 from src.llm.client import LLMClient
+
+logger = logging.getLogger("localchud")
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
@@ -22,6 +27,10 @@ class LLMSettingsBody(BaseModel):
     base_url: str | None = None
     api_key: str | None = None
     openai_compatible: bool | None = None
+
+
+class PullModelBody(BaseModel):
+    model: str
 
 
 @router.get("/llm")
@@ -81,3 +90,99 @@ async def list_models(
             "reachable": False,
             "error": str(e),
         }
+
+
+@router.post("/pull")
+async def pull_model(
+    body: PullModelBody,
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    name = body.model.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Model name is required")
+
+    cfg = get_llm_settings(db)
+    if cfg.get("provider") != "ollama":
+        raise HTTPException(status_code=400, detail="Model download is only supported for Ollama.")
+
+    client = LLMClient(
+        base_url=cfg.get("base_url", "http://127.0.0.1:11434"),
+        model=name,
+        provider="ollama",
+    )
+
+    async def event_generator():
+        logger.info("Ollama pull started: %s", name)
+        last_logged = -1
+        try:
+            async for event in client.pull_model(name):
+                status = event.get("status", "")
+                total = event.get("total") or 0
+                completed = event.get("completed") or 0
+                percent = round(completed / total * 100) if total else None
+
+                if percent is not None and percent != last_logged and percent % 10 == 0:
+                    last_logged = percent
+                    logger.info("Ollama pull %s: %s%% (%s)", name, percent, status)
+
+                if event.get("error"):
+                    logger.error("Ollama pull %s failed: %s", name, event["error"])
+                    yield {"event": "error", "data": json.dumps({"error": event["error"]})}
+                    return
+
+                yield {
+                    "event": "progress",
+                    "data": json.dumps(
+                        {
+                            "status": status,
+                            "completed": completed,
+                            "total": total,
+                            "percent": percent,
+                        }
+                    ),
+                }
+            logger.info("Ollama pull complete: %s", name)
+            yield {"event": "done", "data": json.dumps({"model": name})}
+        except Exception as e:
+            logger.error("Ollama pull %s error: %s", name, e)
+            yield {
+                "event": "error",
+                "data": json.dumps(
+                    {"error": str(e), "hint": "Is Ollama running? Check the base URL."}
+                ),
+            }
+
+    return EventSourceResponse(event_generator(), sep="\n")
+
+
+@router.post("/delete-model")
+async def delete_model(
+    body: PullModelBody,
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    name = body.model.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Model name is required")
+
+    cfg = get_llm_settings(db)
+    if cfg.get("provider") != "ollama":
+        raise HTTPException(status_code=400, detail="Model removal is only supported for Ollama.")
+
+    client = LLMClient(
+        base_url=cfg.get("base_url", "http://127.0.0.1:11434"),
+        model=name,
+        provider="ollama",
+    )
+    try:
+        await client.delete_model(name)
+        logger.info("Ollama model removed: %s", name)
+    except Exception as e:
+        logger.error("Ollama delete %s failed: %s", name, e)
+        raise HTTPException(status_code=502, detail=f"Could not remove model: {e}")
+
+    if cfg.get("model") == name:
+        save_llm_settings(db, {"model": ""})
+
+    return {"ok": True, "removed": name}

@@ -50,6 +50,20 @@ export function setStatus(id, ok, text) {
   if (msg && text) msg.textContent = text;
 }
 
+export function setOllamaStatus(ok, model) {
+  const dot = document.getElementById("status-ollama");
+  const label = document.getElementById("status-ollama-label");
+  if (dot) {
+    dot.classList.toggle("ok", ok);
+    dot.classList.toggle("warn", !ok);
+  }
+  if (label) {
+    const name = (model || "").trim();
+    if (ok) label.textContent = name ? `Ollama · ${name}` : "Ollama";
+    else label.textContent = name ? `Ollama offline · ${name}` : "Ollama offline";
+  }
+}
+
 export async function refreshHeaderFromSettings() {
   try {
     const res = await fetch("/api/settings/models", { credentials: "same-origin" });
@@ -57,9 +71,11 @@ export async function refreshHeaderFromSettings() {
     const llm = await fetch("/api/settings/llm", { credentials: "same-origin" }).then((r) => r.json());
     const model = llm.model || "—";
     setHeaderModel(model, data.reachable === true);
-    setStatus("status-ollama", data.reachable === true, data.reachable ? "ollama ok" : "ollama offline");
+    setOllamaStatus(data.reachable === true, model);
   } catch {
-    setStatus("status-ollama", false, "settings error");
+    setOllamaStatus(false);
+    const msg = document.getElementById("status-msg");
+    if (msg) msg.textContent = "settings error";
   }
   setStatus("status-app", true, "local chud ok");
 }

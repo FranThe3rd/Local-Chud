@@ -61,6 +61,37 @@ class LLMClient:
             data = r.json()
             return [m.get("id", "") for m in data.get("data", [])]
 
+    async def pull_model(self, name: str) -> AsyncIterator[dict[str, Any]]:
+        """Stream `ollama pull` progress events. Ollama provider only."""
+        if self.provider != "ollama":
+            raise ValueError("Model download is only supported for Ollama.")
+        async with httpx.AsyncClient(timeout=None) as client:
+            async with client.stream(
+                "POST",
+                f"{self.base_url}/api/pull",
+                json={"model": name, "stream": True},
+            ) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line.strip():
+                        continue
+                    try:
+                        yield json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+
+    async def delete_model(self, name: str) -> None:
+        """Remove a locally-installed model. Ollama provider only."""
+        if self.provider != "ollama":
+            raise ValueError("Model removal is only supported for Ollama.")
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.request(
+                "DELETE",
+                f"{self.base_url}/api/delete",
+                json={"model": name},
+            )
+            r.raise_for_status()
+
     async def chat_stream(
         self,
         messages: list[dict[str, str]],

@@ -112,14 +112,46 @@
                 <div class="settings-model-row">
                   <select id="model" name="model" class="field-input"></select>
                   <button type="button" class="secondary" id="btn-refresh-models">Refresh</button>
+                  <button type="button" class="secondary danger" id="btn-remove-model" title="Remove selected model">Remove</button>
                 </div>
                 <div id="settings-status" class="settings-status" aria-live="polite"></div>
               </div>
-            </section>
 
-            <div class="settings-actions">
-              <button type="submit">Save settings</button>
-            </div>
+              <div class="settings-actions">
+                <button type="submit" id="btn-save-settings" class="settings-save settings-save--idle">Save settings</button>
+              </div>
+
+              <div class="settings-divider" aria-hidden="true"></div>
+
+              <div class="settings-subsection">
+                <div class="settings-card-head">
+                  <h3>Download a model</h3>
+                  <span class="settings-badge">ollama pull</span>
+                </div>
+                <p class="settings-card-desc">Pull any model from the Ollama library. Progress streams here and to the terminal running the app.</p>
+
+                <div class="form-group">
+                  <label for="pull-model">Model name</label>
+                  <div class="settings-model-row">
+                    <input id="pull-model" class="field-input" placeholder="e.g. llama3.2, qwen2.5:7b, mistral" autocomplete="off" spellcheck="false" />
+                    <button type="button" id="btn-pull-model">Download</button>
+                  </div>
+                  <p class="field-hint">Pick from the list below, or type any name. Tags optional (defaults to <code>:latest</code>).</p>
+                </div>
+
+                <div class="model-browser">
+                  <input id="model-browser-search" class="field-input model-browser-search" placeholder="Search popular models…" autocomplete="off" spellcheck="false" />
+                  <div id="model-browser-list" class="model-browser-list" role="listbox" aria-label="Popular Ollama models"></div>
+                </div>
+
+                <div id="pull-progress" class="pull-progress" hidden>
+                  <div class="pull-progress-bar">
+                    <div class="pull-progress-fill" id="pull-progress-fill"></div>
+                  </div>
+                  <p class="pull-progress-status" id="pull-progress-status" aria-live="polite"></p>
+                </div>
+              </div>
+            </section>
           </form>
         </div>
       </div>
@@ -180,17 +212,44 @@
       <div id="compare-panel" class="panel">
         <div class="panel-header">
           <h2>Compare</h2>
-          <p>Run the same prompt on two models</p>
+          <p>Run the same prompt on two models, side by side</p>
         </div>
         <div class="panel-body">
-          <textarea id="compare-prompt" class="field-textarea" rows="3" placeholder="Prompt for both models…"></textarea>
-          <div class="form-row panel-field-row compare-field-row">
-            <input id="compare-model-b" class="field-input field-input--grow" placeholder="Model B (optional, defaults to A)" />
-            <button type="button" id="btn-compare-run">Run compare</button>
+          <div class="compare-models-row">
+            <div class="compare-model-picker">
+              <label class="field-label" for="compare-model-a">Model A</label>
+              <select id="compare-model-a" class="field-input"></select>
+            </div>
+            <div class="compare-model-picker">
+              <label class="field-label" for="compare-model-b">Model B</label>
+              <select id="compare-model-b" class="field-input"></select>
+            </div>
           </div>
+
+          <label class="field-label" for="compare-prompt">Prompt</label>
+          <textarea id="compare-prompt" class="field-textarea" rows="3" placeholder="Prompt sent to both models…"></textarea>
+
+          <div class="form-row compare-actions">
+            <button type="button" id="btn-compare-run">Run compare</button>
+            <button type="button" class="secondary" id="btn-compare-swap" title="Swap models">Swap</button>
+            <span id="compare-hint" class="compare-hint"></span>
+          </div>
+
           <div class="compare-columns">
-            <div><strong>Model A</strong><div id="compare-a" class="compare-col">—</div></div>
-            <div><strong>Model B</strong><div id="compare-b" class="compare-col">—</div></div>
+            <div class="compare-card">
+              <div class="compare-card-head">
+                <span class="compare-card-label" id="compare-a-name">Model A</span>
+                <span class="compare-card-stats" id="compare-a-stats"></span>
+              </div>
+              <div id="compare-a" class="compare-col compare-col--empty">Run a prompt to see output.</div>
+            </div>
+            <div class="compare-card">
+              <div class="compare-card-head">
+                <span class="compare-card-label" id="compare-b-name">Model B</span>
+                <span class="compare-card-stats" id="compare-b-stats"></span>
+              </div>
+              <div id="compare-b" class="compare-col compare-col--empty">Run a prompt to see output.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -237,7 +296,7 @@
     </main>
 
     <footer class="status-bar">
-      <span><span class="status-dot" id="status-ollama"></span>Ollama</span>
+      <span><span class="status-dot" id="status-ollama"></span><span id="status-ollama-label">Ollama</span></span>
       <span><span class="status-dot" id="status-app"></span>App</span>
       <span id="status-msg">ready</span>
     </footer>

@@ -5,7 +5,7 @@
 import { apiFetch } from "./js/api.js";
 import { initChat, renderMessages } from "./js/chat-v2.js";
 import { initCookbook, loadCookbookPanel } from "./js/cookbook.js";
-import { initCompare } from "./js/compare.js";
+import { initCompare, loadComparePanel } from "./js/compare.js";
 import { initDocuments, loadDocumentsPanel } from "./js/documents.js";
 import { loadCalendarPanel, loadEmailPanel } from "./js/integrations.js";
 import { initMemory, loadMemoryPanel } from "./js/memory.js";
@@ -40,6 +40,7 @@ onPanelShow("documents", loadDocumentsPanel);
 onPanelShow("memory", loadMemoryPanel);
 onPanelShow("tasks", loadTasksPanel);
 onPanelShow("cookbook", loadCookbookPanel);
+onPanelShow("compare", loadComparePanel);
 onPanelShow("email", loadEmailPanel);
 onPanelShow("calendar", loadCalendarPanel);
 onPanelShow("settings", refreshHeaderFromSettings);
