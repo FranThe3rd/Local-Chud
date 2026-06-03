@@ -2,32 +2,32 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useState } from "react";
 import {
   Brain,
-  Calendar,
+  CalendarBlank,
   CaretDown,
-  ChatCircle,
-  CheckSquare,
-  Envelope,
-  FileText,
+  ChatsCircle,
+  CookingPot,
+  EnvelopeSimple,
+  Files,
   Gear,
   List,
+  ListChecks,
   MagnifyingGlass,
   Moon,
-  Package,
   Plus,
   Scales,
   Sun,
 } from "@phosphor-icons/react";
 
 const NAV_ICONS = {
-  chat: ChatCircle,
-  documents: FileText,
+  chat: ChatsCircle,
+  documents: Files,
   memory: Brain,
   research: MagnifyingGlass,
   compare: Scales,
-  cookbook: Package,
-  tasks: CheckSquare,
-  email: Envelope,
-  calendar: Calendar,
+  cookbook: CookingPot,
+  tasks: ListChecks,
+  email: EnvelopeSimple,
+  calendar: CalendarBlank,
 };
 
 function phosphorIcon(Icon, { size = 18, weight = "duotone" } = {}) {

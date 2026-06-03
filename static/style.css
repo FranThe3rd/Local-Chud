@@ -1,26 +1,28 @@
 :root,
 [data-theme="dark"] {
-  --bg: #1e2128;
-  --bg-elevated: #282c34;
-  --bg-panel: #21252b;
-  --bg-input: #181a1f;
-  --text: #abb2bf;
-  --text-dim: #7f848e;
-  --text-bright: #e6e6e6;
-  --accent: #e06c75;
-  --accent-soft: rgba(224, 108, 117, 0.15);
-  --accent-dim: #be5046;
-  --border: #3e4451;
+  --bg: #050505;
+  --bg-elevated: #101010;
+  --bg-panel: #0b0b0d;
+  --bg-input: #151113;
+  --text: #c7c0c3;
+  --text-dim: #8f858a;
+  --text-bright: #f4eeee;
+  --accent: #ff4d5d;
+  --accent-soft: rgba(255, 77, 93, 0.18);
+  --accent-dim: #b91f2d;
+  --border: #2b1a1f;
   --success: #98c379;
   --warning: #e5c07b;
   --info: #61afef;
-  --radius: 10px;
+  --radius: 8px;
   --sidebar-w: 272px;
   --header-h: 52px;
   --status-h: 28px;
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --font-sans: "Avenir Next", "Helvetica Neue", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  --shadow-tight: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
 [data-theme="light"] {
@@ -60,6 +62,8 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 #app {
@@ -76,23 +80,27 @@ header.app-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0 1rem;
+  padding: 0 1.1rem;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025) inset;
   z-index: 10;
 }
 
 .logo {
-  font-weight: 800;
-  font-size: 0.95rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.12rem;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .logo-sub {
   font-size: 0.65rem;
   color: var(--text-dim);
   font-weight: 500;
+  letter-spacing: 0;
 }
 
 .model-pill {
@@ -102,7 +110,8 @@ header.app-header {
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent);
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent-dim) 45%, var(--border));
+  box-shadow: 0 0 18px rgba(255, 77, 93, 0.08);
 }
 
 .model-pill.online {
@@ -120,7 +129,8 @@ aside.sidebar {
   background: var(--bg-panel);
   border-right: 1px solid var(--border);
   overflow-y: auto;
-  padding: 0.75rem;
+  padding: 0.85rem;
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.025) inset;
 }
 
 .boat-art {
@@ -143,7 +153,7 @@ aside.sidebar {
   gap: 0.15rem;
   font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   color: var(--text-dim);
   margin: 0.5rem 0 0.35rem;
   cursor: pointer;
@@ -161,24 +171,28 @@ aside.sidebar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: 6px;
+  padding: 0.52rem 0.65rem;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.85rem;
   color: var(--text);
+  border: 1px solid transparent;
 }
 
 .sidebar li:hover,
 .nav-item:hover {
   background: var(--bg-input);
   color: var(--text-bright);
+  border-color: color-mix(in srgb, var(--border) 70%, var(--text-dim));
 }
 
 .sidebar li.active,
 .nav-item.active {
-  background: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--bg-input));
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
   color: var(--accent);
   font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent), var(--shadow-tight);
 }
 
 .nav-icon,
@@ -194,6 +208,11 @@ aside.sidebar {
 
 .nav-icon {
   width: 1.25rem;
+  height: 1.25rem;
+}
+
+.nav-icon svg {
+  display: block;
 }
 
 .btn-with-icon {
@@ -270,18 +289,22 @@ main.workspace {
 }
 
 .panel-header {
-  padding: 1rem 1.25rem 0.5rem;
+  padding: 1.05rem 1.35rem 0.7rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-elevated);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025) inset;
 }
 
 .panel-header h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.22rem;
+  font-weight: 600;
   color: var(--text-bright);
+  letter-spacing: 0;
 }
 
-.panel-header p n{
+.panel-header p {
   margin: 0.25rem 0 0;
   font-size: 0.8rem;
   color: var(--text-dim);
@@ -331,7 +354,7 @@ main.workspace {
   gap: 0.35rem;
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   color: var(--text-dim);
   margin: 0 0 0.5rem;
 }
@@ -349,17 +372,19 @@ main.workspace {
 .suggested-chip {
   font-family: inherit;
   font-size: 0.8rem;
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
+  padding: 0.48rem 0.78rem;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg-input);
   color: var(--text);
   cursor: pointer;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
 }
 
 .suggested-chip:hover {
   border-color: var(--accent-dim);
   color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 35%, var(--bg-input));
 }
 
 .typing-indicator {
@@ -372,6 +397,7 @@ main.workspace {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-tight);
 }
 
 .typing-dot {
@@ -386,9 +412,10 @@ main.workspace {
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1.1rem;
   border-top: 1px solid var(--border);
   background: var(--bg-panel);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.025) inset;
   flex-shrink: 0;
 }
 
@@ -527,7 +554,7 @@ main.workspace {
   gap: 0.35rem;
   font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   color: var(--text-dim);
   margin-bottom: 0.35rem;
 }
@@ -549,7 +576,7 @@ main.workspace {
   padding: 0.85rem 1rem;
   white-space: pre-wrap;
   word-break: break-word;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-tight);
 }
 
 .message .content.markdown-rendered {
@@ -631,15 +658,16 @@ main.workspace {
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   color: var(--text-dim);
   margin-bottom: 0.35rem;
   margin-top: 20px;
 }
 
 .message.user .content {
-  background: var(--accent-soft);
-  border-color: var(--accent-dim);
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--bg-input));
+  border-color: color-mix(in srgb, var(--accent-dim) 70%, var(--border));
+  box-shadow: 0 10px 26px rgba(185, 31, 45, 0.14);
 }
 
 .message.assistant .content.is-streaming:empty::before {
@@ -709,14 +737,21 @@ button,
 .btn {
   background: var(--accent);
   color: #fff;
-  border: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 80%, #fff);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-weight: 700;
   font-size: 0.85rem;
   touch-action: manipulation;
-  transition: filter 0.12s, transform 0.08s;
+  box-shadow: 0 8px 18px rgba(255, 77, 93, 0.18);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    filter 0.12s,
+    transform 0.08s;
 }
 
 button:hover,
@@ -730,13 +765,16 @@ button:active {
 
 button.secondary,
 .btn.secondary {
-  background: transparent;
+  background: color-mix(in srgb, var(--bg-panel) 78%, #000);
   color: var(--text);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025) inset;
 }
 
 button.secondary:hover {
   background: var(--bg-input);
+  border-color: color-mix(in srgb, var(--accent-dim) 45%, var(--border));
+  color: var(--text-bright);
   filter: none;
 }
 
@@ -771,6 +809,7 @@ button:disabled {
   font-family: inherit;
   font-size: 0.9rem;
   line-height: 1.45;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025) inset;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -819,7 +858,7 @@ button:disabled {
 .field-textarea:focus {
   outline: none;
   border-color: var(--accent-dim);
-  box-shadow: 0 0 0 2px var(--accent-soft);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 0 30px rgba(255, 77, 93, 0.08);
   background: color-mix(in srgb, var(--bg-input) 88%, var(--bg-panel));
 }
 
@@ -921,17 +960,20 @@ button:disabled {
 
 .login-card {
   width: min(100%, 380px);
-  padding: 1.75rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
+  padding: 1.9rem;
+  background: color-mix(in srgb, var(--bg-panel) 88%, #000);
+  border: 1px solid color-mix(in srgb, var(--accent-dim) 28%, var(--border));
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 
 .login-card h1 {
   margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
   color: var(--accent);
-  font-size: 1.35rem;
+  font-size: 1.55rem;
+  letter-spacing: 0;
 }
 
 .login-card .sub {
@@ -974,7 +1016,7 @@ button:disabled {
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
   text-transform: lowercase;
   background: color-mix(in srgb, var(--info) 18%, var(--bg-input));
   color: var(--info);
@@ -1001,7 +1043,7 @@ button:disabled {
   margin-bottom: 0.35rem;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .form-group input,
@@ -1035,17 +1077,30 @@ button:disabled {
 }
 
 .card {
-  background: var(--bg-panel);
+  background: color-mix(in srgb, var(--bg-panel) 88%, #000);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
+  box-shadow: var(--shadow-tight);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--accent-dim) 38%, var(--border));
   box-shadow: var(--shadow);
+  transform: translateY(-1px);
 }
 
 .card h4 {
   margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
   color: var(--text-bright);
-  font-size: 0.9rem;
+  font-size: 1rem;
+  letter-spacing: 0;
 }
 
 .card .meta {
@@ -1080,7 +1135,7 @@ button:disabled {
 .doc-sidebar-label {
   font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   color: var(--text-dim);
   margin: 0 0 0.5rem;
   font-weight: 600;
@@ -1111,10 +1166,11 @@ button:disabled {
 }
 
 .doc-list-item.active {
-  background: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--bg-input));
   color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 35%, transparent);
   font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .editor-area {
@@ -1150,8 +1206,9 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 0.6rem;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg-elevated) 88%, #000);
   transition: border-color 0.15s ease;
+  box-shadow: var(--shadow-tight);
 }
 
 .memory-item:hover {
@@ -1203,7 +1260,7 @@ button:disabled {
 }
 
 .compare-col {
-  background: var(--bg-panel);
+  background: color-mix(in srgb, var(--bg-panel) 88%, #000);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
@@ -1233,6 +1290,7 @@ footer.status-bar {
   color: var(--text-dim);
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.025) inset;
 }
 
 .status-dot {
