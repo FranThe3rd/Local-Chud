@@ -28,7 +28,7 @@ from core.config import get_settings
 from core.db import get_db, init_db
 from core.middleware import CSPNonceMiddleware, NoCacheStaticMiddleware
 
-ASSETS_V = "25"
+ASSETS_V = "32"
 from routes import (
     auth,
     chat,

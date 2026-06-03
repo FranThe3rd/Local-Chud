@@ -118,6 +118,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
 
       // Upload any attachments and collect their extracted text
       let fileContext = "";
+      const uploadErrors = [];
       if (attachments.length > 0) {
         for (const a of attachments) {
           try {
@@ -129,11 +130,27 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
               if (data.text) {
                 fileContext += `\n\n--- File: ${a.name} ---\n${data.text}`;
               }
+            } else {
+              const data = await res.json().catch(() => ({}));
+              uploadErrors.push(`${a.name}: ${data.detail || "upload failed"}`);
             }
-          } catch {
-            // ignore individual upload errors
+          } catch (err) {
+            uploadErrors.push(`${a.name}: ${err.message || "upload failed"}`);
           }
         }
+      }
+
+      if (uploadErrors.length > 0) {
+        setItems((prev) => [
+          ...prev,
+          {
+            kind: "message",
+            id: nextId(),
+            role: "assistant",
+            content: `Could not upload file:\n${uploadErrors.join("\n")}`,
+          },
+        ]);
+        return;
       }
 
       const fullMessage = fileContext ? `${text}\n${fileContext}` : text;

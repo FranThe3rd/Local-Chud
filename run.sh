@@ -277,6 +277,8 @@ if [[ ! -d .venv ]]; then
   python3 setup.py
 fi
 source .venv/bin/activate
+echo "   Python deps: checking requirements..."
+python -m pip install -q -r requirements.txt
 mkdir -p data
 if [[ -f frontend/package.json ]]; then
   if [[ ! -d frontend/node_modules ]]; then

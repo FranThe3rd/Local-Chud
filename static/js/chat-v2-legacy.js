@@ -7,6 +7,7 @@ import {
 import { ensureActiveSession } from "./sessions-v2.js";
 
 let abortController = null;
+let legacyAttachments = [];
 
 function asText(value) {
   if (value == null) return "";
@@ -158,7 +159,7 @@ function drainSseBuffer(buffer, assistantEl, state) {
   return rest;
 }
 
-export async function sendMessage(text, agentMode) {
+export async function sendMessage(text, agentMode, displayText) {
   const sessionId = await ensureActiveSession();
   if (!sessionId) {
     appendMessage(
@@ -168,7 +169,7 @@ export async function sendMessage(text, agentMode) {
     return;
   }
 
-  const userText = asText(text);
+  const userText = asText(displayText || text);
   appendMessage("user", userText);
   const { contentEl: assistantEl, div: assistantDiv } = appendMessage("assistant", "…");
   const state = { full: "" };
@@ -184,7 +185,7 @@ export async function sendMessage(text, agentMode) {
       credentials: "same-origin",
       body: JSON.stringify({
         session_id: sessionId,
-        message: userText,
+        message: asText(text),
         agent_mode: agentMode,
       }),
       signal: abortController.signal,
@@ -236,13 +237,41 @@ export async function sendMessage(text, agentMode) {
 
 export function initChat() {
   const input = document.getElementById("chat-input");
+  const fileInput = document.getElementById("chat-file-input");
+  const attachButton = document.getElementById("btn-attach-file");
+
+  attachButton?.addEventListener("click", () => fileInput?.click());
+  fileInput?.addEventListener("change", () => {
+    legacyAttachments = Array.from(fileInput.files || []);
+    attachButton.textContent = legacyAttachments.length ? `+ ${legacyAttachments.length}` : "+";
+  });
+
   const send = async () => {
     const text = input?.value?.trim();
-    if (!text) return;
+    if (!text && !legacyAttachments.length) return;
     const agentMode = document.getElementById("agent-mode")?.checked || false;
+    let fileContext = "";
+    for (const file of legacyAttachments) {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await apiFetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || `Upload failed: ${file.name}`);
+      }
+      const data = await res.json();
+      if (data.text) {
+        fileContext += `\n\n--- File: ${file.name} ---\n${data.text}`;
+      }
+    }
+    const message = fileContext ? `${text}\n${fileContext}` : text;
+    const displayText = text || legacyAttachments.map((f) => f.name).join(", ");
     input.value = "";
+    legacyAttachments = [];
+    if (fileInput) fileInput.value = "";
+    if (attachButton) attachButton.textContent = "+";
     try {
-      await sendMessage(text, agentMode);
+      await sendMessage(message, agentMode, displayText);
     } catch (err) {
       appendMessage("assistant", asText(err.message));
     }

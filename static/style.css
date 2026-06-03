@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap');
 
 :root,
 [data-theme="dark"] {
@@ -20,10 +20,10 @@
   --sidebar-w: 272px;
   --header-h: 52px;
   --status-h: 28px;
-  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono-ui: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
+  --font-display: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
+  --font-mono-ui: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
   --shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
   --shadow-tight: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
@@ -40,9 +40,9 @@
   --accent-soft: rgba(228, 86, 73, 0.12);
   --border: #d8dae0;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono-ui: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
+  --font-display: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
+  --font-mono-ui: "Bodoni Moda", "Iowan Old Style", Georgia, serif;
 }
 
 [data-theme="dark"] {
@@ -70,6 +70,13 @@ body {
   line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 h1, h2, h3, h4, h5 {
@@ -340,13 +347,14 @@ main.workspace {
   flex: 1;
   min-height: 0;
   width: 100%;
+  height: 100%;
 }
 
 #chat-messages,
 .chat-messages-root {
   flex: 1;
   overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1.5rem 1.25rem 1rem;
   scroll-behavior: smooth;
   min-height: 0;
 }
@@ -354,7 +362,7 @@ main.workspace {
 .chat-messages-inner {
   max-width: 760px;
   margin: 0 auto;
-  padding-bottom: 0.5rem;
+  padding-bottom: 1rem;
 }
 
 .suggested-prompts {
@@ -423,32 +431,36 @@ main.workspace {
 
 /* GPT-style input */
 .chat-input-area {
-  padding: 0.75rem 1rem 1rem;
+  width: 100%;
+  padding: 0.75rem 1rem 1.1rem;
   background: transparent;
   border-top: none;
   flex-shrink: 0;
 }
 
-/* Hidden fallback bar (vanilla JS legacy) */
+/* Fallback bar (vanilla JS legacy) - styled like the React composer */
 #chat-fallback-bar {
-  max-width: 760px;
+  width: min(860px, calc(100% - 2rem));
+  max-width: 860px;
   margin: 0 auto;
 }
 
 .gpt-input-wrap {
-  max-width: 760px;
+  width: min(860px, calc(100% - 2rem));
+  max-width: 860px;
   margin: 0 auto;
 }
 
 .gpt-input-box {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 26px;
   box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.28),
+    0 8px 28px rgba(0, 0, 0, 0.28),
     0 1px 0 rgba(255, 255, 255, 0.04) inset;
   overflow: hidden;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  text-align:center;
 }
 
 .gpt-input-box:focus-within {
@@ -509,9 +521,11 @@ main.workspace {
 
 .gpt-input-row {
   display: flex;
-  align-items: flex-end;
-  gap: 0;
-  padding: 0.45rem 0.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 64px;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
 }
 
 .gpt-textarea {
@@ -521,34 +535,55 @@ main.workspace {
   box-shadow: none !important;
   outline: none !important;
   resize: none;
-  padding: 0.45rem 0.5rem;
+  height: 36px;
+  min-height: 36px;
+  max-height: 180px;
+  padding: 0 0.75rem;
   font-family: inherit;
-  font-size: 0.95rem;
-  line-height: 1.55;
+  font-size: 1.08rem;
+  line-height: 36px;
+  text-align: left;
   color: var(--text-bright);
-  min-height: 28px;
-  max-height: 200px;
   overflow-y: auto;
+  align-self: center;
 }
 
 .gpt-textarea::placeholder {
   color: var(--text-dim);
 }
 
+/* Older fallback markup can briefly render before React mounts. Keep it centered too. */
+#chat-fallback-bar > textarea#chat-input {
+  display: block;
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  text-align: left;
+  font-size: 1.08rem;
+  line-height: 36px;
+  padding: 0 1rem;
+  margin: 0;
+}
+
+#chat-fallback-bar > .chat-input-toolbar {
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 0.65rem;
+}
+
 .gpt-input-actions {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.5rem;
   flex-shrink: 0;
-  padding-bottom: 0.2rem;
 }
 
 .gpt-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: transparent;
   border: none;
@@ -558,6 +593,8 @@ main.workspace {
   transition: background 0.15s ease, color 0.15s ease;
   padding: 0;
   flex-shrink: 0;
+  line-height: 1;
+  text-align: center;
 }
 
 .gpt-icon-btn:hover {
@@ -584,8 +621,8 @@ main.workspace {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--text-bright);
   border: none;
@@ -594,6 +631,8 @@ main.workspace {
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
+  line-height: 1;
+  text-align: center;
   transition: background 0.15s ease, transform 0.1s ease;
 }
 
@@ -757,20 +796,21 @@ main.workspace {
 }
 
 .message {
-  margin-bottom: 1.25rem;
-  max-width: min(720px, 92%);
+  margin-bottom: 1.35rem;
+  max-width: 100%;
 }
 
 .message.user {
   margin-left: auto;
+  max-width: min(620px, 86%);
 }
 
 .message .role {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.65rem;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0;
   color: var(--text-dim);
   margin-bottom: 0.35rem;
@@ -782,18 +822,20 @@ main.workspace {
 }
 
 .message.user .role {
-  text-align: right;
+  justify-content: flex-end;
   color: var(--accent);
 }
 
 .message .content {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.85rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  box-shadow: var(--shadow-tight);
+  box-shadow: none;
+  color: var(--text-bright);
+  line-height: 1.65;
 }
 
 .message .content.markdown-rendered {
@@ -882,9 +924,11 @@ main.workspace {
 }
 
 .message.user .content {
-  background: color-mix(in srgb, var(--accent-soft) 70%, var(--bg-input));
-  border-color: color-mix(in srgb, var(--accent-dim) 70%, var(--border));
-  box-shadow: 0 10px 26px rgba(185, 31, 45, 0.14);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 0.75rem 0.95rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16);
 }
 
 .message.assistant .content.is-streaming:empty::before {
@@ -992,14 +1036,18 @@ main.workspace {
 #chat-input,
 .chat-input-area textarea {
   flex: 1;
-  min-height: 48px;
-  max-height: 140px;
+  min-height: 64px;
+  max-height: 200px;
   border-radius: var(--radius);
 }
 
 /* Buttons */
 button,
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   background: var(--accent);
   color: #fff;
   border: 1px solid color-mix(in srgb, var(--accent) 80%, #fff);
@@ -1009,6 +1057,7 @@ button,
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 0.85rem;
+  line-height: 1;
   touch-action: manipulation;
   box-shadow: 0 8px 18px rgba(255, 77, 93, 0.18);
   transition:
@@ -1720,4 +1769,26 @@ footer.status-bar {
 
 .menu-toggle {
   display: none;
+}
+
+/* Final chat composer override: keep placeholder/text vertically centered. */
+#chat-input.gpt-textarea,
+.chat-input-area textarea#chat-input,
+#chat-fallback-bar > textarea#chat-input {
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 180px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 1.08rem !important;
+  line-height: 36px !important;
+  text-align: left !important;
+  align-self: center !important;
+  box-sizing: border-box;
+}
+
+#chat-input.gpt-textarea::placeholder,
+.chat-input-area textarea#chat-input::placeholder,
+#chat-fallback-bar > textarea#chat-input::placeholder {
+  line-height: 36px;
 }

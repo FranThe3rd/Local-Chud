@@ -60,15 +60,28 @@
         <div id="chat-app">
           <div id="chat-messages"></div>
           <div class="chat-input-area" id="chat-fallback-bar">
-            <textarea id="chat-input" rows="2" placeholder="Message…"></textarea>
-            <div class="chat-input-toolbar">
-              <label class="agent-toggle-btn" id="agent-toggle-label">
-                <input type="checkbox" id="agent-mode" style="display:none" />
-                Agent
-              </label>
-              <span class="spacer"></span>
-              <button type="button" class="secondary btn-with-icon" id="btn-stop" disabled>Stop</button>
-              <button type="button" class="btn-with-icon" id="btn-send">Send</button>
+            <div class="gpt-input-box">
+              <div class="gpt-input-row">
+                <div class="gpt-input-actions gpt-input-actions--left">
+                  <input
+                    type="file"
+                    id="chat-file-input"
+                    multiple
+                    accept=".txt,.md,.pdf,.csv,.json,.py,.js,.ts,.jsx,.tsx,.html,.css,.xml,.yaml,.yml"
+                    style="display:none"
+                  />
+                  <button type="button" class="gpt-icon-btn" id="btn-attach-file" title="Attach file">+</button>
+                </div>
+                <textarea id="chat-input" class="gpt-textarea" rows="1" placeholder="Ask anything…"></textarea>
+                <div class="gpt-input-actions gpt-input-actions--right">
+                  <label class="gpt-icon-btn agent-dot-btn" id="agent-toggle-label" title="Agent mode">
+                    <input type="checkbox" id="agent-mode" style="display:none" />
+                    A
+                  </label>
+                  <button type="button" class="gpt-send-btn gpt-send-btn--stop" id="btn-stop" disabled>■</button>
+                  <button type="button" class="gpt-send-btn" id="btn-send">↑</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
