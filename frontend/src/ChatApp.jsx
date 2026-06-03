@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { ChatInput } from "./components/ChatInput.jsx";
 import { MessageList } from "./components/MessageList.jsx";
 import { SuggestedPrompts } from "./components/SuggestedPrompts.jsx";
@@ -142,7 +143,9 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
                 {
                   kind: "tool",
                   id: nextId(),
-                  text: `🔧 ${asText(payload.name)}(${JSON.stringify(payload.arguments ?? {})})`,
+                  variant: "start",
+                  name: asText(payload.name),
+                  detail: JSON.stringify(payload.arguments ?? {}),
                 },
               ]);
             } else if (payload.type === "tool_result") {
@@ -152,7 +155,9 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
                 {
                   kind: "tool",
                   id: nextId(),
-                  text: `↳ ${asText(payload.name)}: ${preview}…`,
+                  variant: "result",
+                  name: asText(payload.name),
+                  detail: preview,
                 },
               ]);
             } else if (payload.type === "error") {
@@ -232,7 +237,11 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
   return (
     <>
       <div id="chat-messages" className="chat-messages-root">
-        <SuggestedPrompts visible={showSuggestions} onPick={(t) => send(t)} />
+        <AnimatePresence>
+          {showSuggestions && (
+            <SuggestedPrompts key="suggestions" onPick={(t) => send(t)} />
+          )}
+        </AnimatePresence>
         <MessageList
           items={items}
           streaming={streaming}

@@ -9,9 +9,13 @@ async function render() {
   (data.memories || []).forEach((m) => {
     const div = document.createElement("div");
     div.className = "memory-item";
-    div.innerHTML = `<div>${escapeHtml(m.content)}</div>
-      <div class="tags">${(m.tags || []).join(" · ") || "no tags"}</div>
-      <button type="button" class="secondary" style="margin-top:0.35rem;font-size:0.75rem">Delete</button>`;
+    const tags = m.tags || [];
+    const tagsHtml = tags.length
+      ? tags.map((t) => `<span class="tag-chip">${escapeHtml(t)}</span>`).join("")
+      : `<span class="tag-chip tag-chip--muted">untagged</span>`;
+    div.innerHTML = `<div class="memory-content">${escapeHtml(m.content)}</div>
+      <div class="tag-list">${tagsHtml}</div>
+      <button type="button" class="secondary memory-delete-btn">Delete</button>`;
     div.querySelector("button").addEventListener("click", async () => {
       await apiFetch(`/api/memory/${m.id}`, { method: "DELETE" });
       render();
@@ -19,7 +23,7 @@ async function render() {
     root.appendChild(div);
   });
   if (!(data.memories || []).length) {
-    root.innerHTML = "<p class='meta'>No memories yet — add one above.</p>";
+    root.innerHTML = "<p class='empty-state'>No memories yet — add one above.</p>";
   }
 }
 

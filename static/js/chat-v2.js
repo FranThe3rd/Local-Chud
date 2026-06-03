@@ -17,6 +17,7 @@ async function loadBundle() {
 
 export async function initChat() {
   const bundle = await loadBundle();
+  bundle?.mountShellIcons?.();
   if (bundle?.mountChatApp) {
     bundle.mountChatApp({ ensureActiveSession, apiFetch });
     return;

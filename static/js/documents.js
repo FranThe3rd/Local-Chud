@@ -29,7 +29,7 @@ async function loadList() {
     list.appendChild(el);
   });
   if (!docs.length) {
-    list.innerHTML = "<p class='meta'>No documents — click New</p>";
+    list.innerHTML = "<p class='empty-state'>No documents yet — create one with <strong>New</strong>.</p>";
   }
 }
 

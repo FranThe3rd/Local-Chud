@@ -1,3 +1,4 @@
+import { AnimatePresence } from "motion/react";
 import { MessageBubble } from "./MessageBubble.jsx";
 import { ToolEvent } from "./ToolEvent.jsx";
 import { TypingIndicator } from "./TypingIndicator.jsx";
@@ -9,19 +10,30 @@ export function MessageList({ items, streaming, onSaveDocument, listRef }) {
 
   return (
     <div className="chat-messages-inner" ref={listRef}>
-      {items.map((item) => {
-        if (item.kind === "tool") {
-          return <ToolEvent key={item.id} text={item.text} />;
-        }
-        return (
-          <MessageBubble
-            key={item.id}
-            message={item}
-            onSaveDocument={onSaveDocument}
-          />
-        );
-      })}
-      {showTyping && <TypingIndicator />}
+      <AnimatePresence mode="popLayout" initial={false}>
+        {items.map((item) => {
+          if (item.kind === "tool") {
+            return (
+              <ToolEvent
+                key={item.id}
+                variant={item.variant}
+                name={item.name}
+                detail={item.detail}
+              />
+            );
+          }
+          return (
+            <MessageBubble
+              key={item.id}
+              message={item}
+              onSaveDocument={onSaveDocument}
+            />
+          );
+        })}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showTyping && <TypingIndicator key="typing" />}
+      </AnimatePresence>
     </div>
   );
 }

@@ -17,15 +17,15 @@
 <body>
   <div id="app">
     <header class="app-header">
-      <button type="button" class="menu-toggle secondary" id="menu-toggle" aria-label="Menu">☰</button>
+      <button type="button" class="menu-toggle secondary btn-with-icon" id="menu-toggle" aria-label="Menu"><span class="btn-icon" id="icon-menu"></span></button>
       <div>
         <div class="logo">local chud</div>
         <div class="logo-sub">local-first · slightly janky</div>
       </div>
       <span id="header-model" class="model-pill">model …</span>
       <span class="spacer"></span>
-      <button type="button" class="secondary" id="theme-toggle" title="Theme">◐</button>
-      <button type="button" class="secondary" id="btn-settings">⚙ Settings</button>
+      <button type="button" class="secondary btn-with-icon" id="theme-toggle" title="Theme"><span class="btn-icon" id="icon-theme"></span></button>
+      <button type="button" class="secondary btn-with-icon" id="btn-settings"><span class="btn-icon" id="icon-settings"></span> Settings</button>
       <button type="button" class="secondary" id="btn-logout">Logout</button>
     </header>
 
@@ -34,23 +34,23 @@
     |#&gt;  ~ slightly janky ~
    /___\</pre>
       <section>
-        <h3 data-collapse="sessions">▾ Chats</h3>
+        <h3 data-collapse="sessions"><span class="collapse-icon" data-mount></span> Chats</h3>
         <ul id="session-list"></ul>
-        <button type="button" class="secondary" id="btn-new-chat" style="width:100%;margin-top:0.5rem">+ New chat</button>
+        <button type="button" class="secondary btn-with-icon" id="btn-new-chat" style="width:100%;margin-top:0.5rem"><span class="btn-icon" id="icon-new-chat"></span> New chat</button>
         <button type="button" class="secondary danger" id="btn-delete-all-chats" style="width:100%;margin-top:0.35rem">Delete all chats</button>
       </section>
       <section>
-        <h3 data-collapse="nav">▾ Workspace</h3>
+        <h3 data-collapse="nav"><span class="collapse-icon" data-mount></span> Workspace</h3>
         <ul id="nav-features">
-          <li data-panel="chat" class="active"><span class="nav-icon">💬</span> Chat</li>
-          <li data-panel="documents"><span class="nav-icon">📄</span> Documents</li>
-          <li data-panel="memory"><span class="nav-icon">🧠</span> Memory</li>
-          <li data-panel="research"><span class="nav-icon">🔍</span> Research</li>
-          <li data-panel="compare"><span class="nav-icon">⚖</span> Compare</li>
-          <li data-panel="cookbook"><span class="nav-icon">📦</span> Cookbook</li>
-          <li data-panel="tasks"><span class="nav-icon">✓</span> Tasks</li>
-          <li data-panel="email"><span class="nav-icon">✉</span> Email</li>
-          <li data-panel="calendar"><span class="nav-icon">📅</span> Calendar</li>
+          <li data-panel="chat" class="active"><span class="nav-icon" data-icon="chat"></span> Chat</li>
+          <li data-panel="documents"><span class="nav-icon" data-icon="documents"></span> Documents</li>
+          <li data-panel="memory"><span class="nav-icon" data-icon="memory"></span> Memory</li>
+          <li data-panel="research"><span class="nav-icon" data-icon="research"></span> Research</li>
+          <li data-panel="compare"><span class="nav-icon" data-icon="compare"></span> Compare</li>
+          <li data-panel="cookbook"><span class="nav-icon" data-icon="cookbook"></span> Cookbook</li>
+          <li data-panel="tasks"><span class="nav-icon" data-icon="tasks"></span> Tasks</li>
+          <li data-panel="email"><span class="nav-icon" data-icon="email"></span> Email</li>
+          <li data-panel="calendar"><span class="nav-icon" data-icon="calendar"></span> Calendar</li>
         </ul>
       </section>
     </aside>
@@ -108,17 +108,21 @@
           <h2>Documents</h2>
           <p>Edit markdown source — preview renders in chat when you ask for a document</p>
         </div>
-        <div class="panel-body split-view">
-          <div class="doc-list" id="doc-list"></div>
+        <div class="panel-body split-view documents-layout">
+          <aside class="doc-sidebar">
+            <p class="doc-sidebar-label">Your documents</p>
+            <div class="doc-list" id="doc-list"></div>
+          </aside>
           <div class="editor-area">
-            <input type="text" id="doc-title" placeholder="Title" style="width:100%;margin-bottom:0.5rem" />
+            <label class="field-label" for="doc-title">Title</label>
+            <input type="text" id="doc-title" class="field-input" placeholder="Document title" autocomplete="off" />
             <label class="field-label" for="doc-content">Markdown source</label>
-            <textarea id="doc-content" placeholder="Write markdown…" spellcheck="false"></textarea>
-            <div class="form-row" style="margin-top:0.5rem">
+            <textarea id="doc-content" class="field-textarea field-textarea--code" placeholder="Write markdown…" spellcheck="false"></textarea>
+            <div class="form-row editor-toolbar">
               <button type="button" id="btn-doc-save">Save</button>
               <button type="button" class="secondary" id="btn-doc-download">Download .md</button>
               <button type="button" class="secondary" id="btn-doc-new">New</button>
-              <button type="button" class="secondary" id="btn-doc-delete">Delete</button>
+              <button type="button" class="secondary danger" id="btn-doc-delete">Delete</button>
             </div>
           </div>
         </div>
@@ -130,8 +134,8 @@
           <p>Facts the agent can recall (local JSON, per user)</p>
         </div>
         <div class="panel-body">
-          <div class="form-row">
-            <input type="text" id="memory-input" placeholder="Remember that…" style="flex:1" />
+          <div class="form-row panel-field-row">
+            <input type="text" id="memory-input" class="field-input field-input--grow" placeholder="Remember that…" />
             <button type="button" id="btn-memory-add">Add</button>
           </div>
           <div id="memory-list" style="margin-top:1rem"></div>
@@ -144,8 +148,8 @@
           <p>Web search via SearXNG (docker compose)</p>
         </div>
         <div class="panel-body">
-          <div class="form-row">
-            <input type="text" id="research-query" placeholder="Search the web…" style="flex:1" />
+          <div class="form-row panel-field-row">
+            <input type="text" id="research-query" class="field-input field-input--grow" placeholder="Search the web…" />
             <button type="button" id="btn-research">Search</button>
           </div>
           <div id="research-results" class="search-results" style="margin-top:1rem"></div>
@@ -158,9 +162,9 @@
           <p>Run the same prompt on two models</p>
         </div>
         <div class="panel-body">
-          <textarea id="compare-prompt" rows="3" placeholder="Prompt for both models…" style="width:100%"></textarea>
-          <div class="form-row" style="margin:0.5rem 0">
-            <input id="compare-model-b" placeholder="Model B (optional, defaults to A)" style="flex:1" />
+          <textarea id="compare-prompt" class="field-textarea" rows="3" placeholder="Prompt for both models…"></textarea>
+          <div class="form-row panel-field-row compare-field-row">
+            <input id="compare-model-b" class="field-input field-input--grow" placeholder="Model B (optional, defaults to A)" />
             <button type="button" id="btn-compare-run">Run compare</button>
           </div>
           <div class="compare-columns">
@@ -186,8 +190,8 @@
           <p>Simple todos — agent can use these later</p>
         </div>
         <div class="panel-body">
-          <div class="form-row">
-            <input type="text" id="task-input" placeholder="New task…" style="flex:1" />
+          <div class="form-row panel-field-row">
+            <input type="text" id="task-input" class="field-input field-input--grow" placeholder="New task…" />
             <button type="button" id="btn-task-add">Add</button>
           </div>
           <div id="task-list" style="margin-top:1rem"></div>

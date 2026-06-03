@@ -1,7 +1,10 @@
 import { createRoot } from "react-dom/client";
 import { ChatApp } from "./ChatApp.jsx";
+import { mountShellIcons } from "./shellIcons.jsx";
 
 let root = null;
+
+export { mountShellIcons };
 
 export function mountChatApp(deps) {
   const mount = document.getElementById("chat-app");

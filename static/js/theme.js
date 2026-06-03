@@ -12,6 +12,7 @@ export function getTheme() {
 export function setTheme(theme) {
   localStorage.setItem(STORAGE_KEY, theme);
   document.documentElement.setAttribute("data-theme", theme);
+  window.dispatchEvent(new CustomEvent("localchud:theme-change"));
 }
 
 export function toggleTheme() {
