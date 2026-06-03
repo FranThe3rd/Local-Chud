@@ -28,7 +28,7 @@ from core.config import get_settings
 from core.db import get_db, init_db
 from core.middleware import CSPNonceMiddleware, NoCacheStaticMiddleware
 
-ASSETS_V = "32"
+ASSETS_V = "35"
 from routes import (
     auth,
     chat,
@@ -126,6 +126,17 @@ def health():
     return {"status": "ok", "app": "local chud"}
 
 
+def _render_page(filename: str, request: Request, fallback: str) -> HTMLResponse:
+    path = STATIC / filename
+    if not path.exists():
+        return HTMLResponse(fallback)
+    html = path.read_text()
+    nonce = getattr(request.state, "csp_nonce", "")
+    html = html.replace("{{CSP_NONCE}}", nonce)
+    html = html.replace("{{ASSETS_V}}", ASSETS_V)
+    return HTMLResponse(html)
+
+
 def _maybe_auto_login(request: Request, db: Session, redirect_to: str = "/") -> RedirectResponse | None:
     if not auto_login_enabled(request):
         return None
@@ -140,40 +151,31 @@ def _maybe_auto_login(request: Request, db: Session, redirect_to: str = "/") -> 
     return resp
 
 
+@app.get("/")
+async def home_page(request: Request):
+    return _render_page("home.html", request, "<h1>local chud</h1><p>home.html missing</p>")
+
+
 @app.get("/login")
 async def login_page(request: Request, db: Session = Depends(get_db)):
-    auto = _maybe_auto_login(request, db, redirect_to="/")
+    auto = _maybe_auto_login(request, db, redirect_to="/app")
     if auto:
         return auto
-    path = STATIC / "login.html"
-    if not path.exists():
-        return HTMLResponse("<h1>Login</h1><p>login.html missing</p>")
-    html = path.read_text()
-    nonce = getattr(request.state, "csp_nonce", "")
-    html = html.replace("{{CSP_NONCE}}", nonce)
-    html = html.replace("{{ASSETS_V}}", ASSETS_V)
-    return HTMLResponse(html)
+    return _render_page("login.html", request, "<h1>Login</h1><p>login.html missing</p>")
 
 
-@app.get("/")
-async def index_page(request: Request, db: Session = Depends(get_db)):
+@app.get("/app")
+async def app_page(request: Request, db: Session = Depends(get_db)):
     cfg = get_settings()
     if cfg.auth_enabled:
         token = request.cookies.get(SESSION_COOKIE)
         if not get_user_id_from_token(token):
-            auto = _maybe_auto_login(request, db, redirect_to="/")
+            auto = _maybe_auto_login(request, db, redirect_to="/app")
             if auto:
                 return auto
             return RedirectResponse(url="/login", status_code=302)
 
-    path = STATIC / "index.html"
-    if not path.exists():
-        return HTMLResponse("<h1>local chud</h1><p>index.html missing</p>")
-    html = path.read_text()
-    nonce = getattr(request.state, "csp_nonce", "")
-    html = html.replace("{{CSP_NONCE}}", nonce)
-    html = html.replace("{{ASSETS_V}}", ASSETS_V)
-    return HTMLResponse(html)
+    return _render_page("index.html", request, "<h1>local chud</h1><p>index.html missing</p>")
 
 
 @app.get("/manifest.json")

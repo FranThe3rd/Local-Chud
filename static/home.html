@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <title>local chud — private, local-first AI workspace</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/static/style.css?v={{ASSETS_V}}" />
+  <script nonce="{{CSP_NONCE}}">
+    (function () {
+      var t = localStorage.getItem("localchud-theme") || localStorage.getItem("keelhouse-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <style>
+    .landing {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 38%, rgba(255, 77, 93, 0.16), transparent 70%),
+        var(--bg);
+    }
+
+    .landing::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .landing__inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 560px;
+      animation: landing-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes landing-rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .landing__logo {
+      width: 96px;
+      height: 96px;
+      filter: drop-shadow(0 10px 32px rgba(255, 77, 93, 0.4));
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .landing__logo {
+        animation: landing-float 6s ease-in-out infinite;
+      }
+    }
+
+    @keyframes landing-float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-7px); }
+    }
+
+    .landing__wordmark {
+      margin: 1.4rem 0 0;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(2.6rem, 9vw, 3.9rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ff6b78 0%, var(--accent) 45%, var(--accent-dim) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .landing__tagline {
+      margin: 1rem 0 0;
+      font-size: clamp(1rem, 2.5vw, 1.18rem);
+      color: var(--text);
+      max-width: 30ch;
+      line-height: 1.55;
+    }
+
+    .landing__sub {
+      margin: 0.6rem 0 0;
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .landing__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      justify-content: center;
+      margin-top: 2.4rem;
+    }
+
+    .landing__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-width: 168px;
+      padding: 0.9rem 1.6rem;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.12s ease, filter 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .landing__btn:active { transform: scale(0.98); }
+
+    .landing__btn--primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent) 80%, #fff);
+      box-shadow: 0 12px 30px rgba(255, 77, 93, 0.32);
+    }
+
+    .landing__btn--primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+    .landing__btn--ghost {
+      color: var(--text-bright);
+      background: color-mix(in srgb, var(--bg-panel) 70%, transparent);
+      border: 1px solid var(--border);
+    }
+
+    .landing__btn--ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .landing__foot {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <main class="landing">
+    <div class="landing__inner">
+      <svg class="landing__logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="local chud logo">
+        <defs>
+          <linearGradient id="lc-red" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ff6b78" />
+            <stop offset="0.5" stop-color="#ff4d5d" />
+            <stop offset="1" stop-color="#b91f2d" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M45.5 8.6 L59 32 L45.5 55.4 L18.5 55.4 L5 32 L18.5 8.6 Z"
+          stroke="url(#lc-red)" stroke-width="3.5" stroke-linejoin="round" fill="rgba(255,77,93,0.06)" />
+        <path
+          d="M32 16 C 33.5 27, 37 30.5, 48 32 C 37 33.5, 33.5 37, 32 48 C 30.5 37, 27 33.5, 16 32 C 27 30.5, 30.5 27, 32 16 Z"
+          fill="url(#lc-red)" />
+      </svg>
+
+      <h1 class="landing__wordmark">local chud</h1>
+      <p class="landing__sub">local-first&nbsp;·&nbsp;private&nbsp;·&nbsp;yours</p>
+      <p class="landing__tagline">A self-hosted AI workspace that runs entirely on your hardware. No cloud, no keys, no tracking.</p>
+
+      <div class="landing__actions">
+        <a class="landing__btn landing__btn--primary" href="/app">Get Started</a>
+        <a class="landing__btn landing__btn--ghost" href="https://github.com/FranThe3rd/Local-Chud" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+      </div>
+    </div>
+    <p class="landing__foot">Self-hosted · MIT Licensed</p>
+  </main>
+</body>
+</html>

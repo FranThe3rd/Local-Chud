@@ -2,7 +2,7 @@
   "name": "local chud",
   "short_name": "chud",
   "description": "local-first AI workspace",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#1e2128",
   "theme_color": "#e06c75",

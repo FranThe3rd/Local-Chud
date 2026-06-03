@@ -1,19 +1,19 @@
 import { apiFetch } from "./api.js";
 
 export function initResearch() {
-  document.getElementById("btn-research")?.addEventListener("click", runSearch);
+  document.getElementById("btn-research")?.addEventListener("click", () => runSearch(1));
   document.getElementById("research-query")?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") runSearch();
+    if (e.key === "Enter") runSearch(1);
   });
 }
 
-async function runSearch() {
+async function runSearch(page = 1) {
   const q = document.getElementById("research-query")?.value?.trim();
   const root = document.getElementById("research-results");
   if (!q || !root) return;
 
   root.innerHTML = `<div class="search-status search-status--loading">
-    <span class="search-spinner"></span> Searching for <em>${escHtml(q)}</em>…
+    <span class="search-spinner"></span> Searching for <em>${escHtml(q)}</em>${page > 1 ? ` (page ${page})` : ""}…
   </div>`;
 
   let data;
@@ -21,7 +21,7 @@ async function runSearch() {
     const res = await apiFetch("/api/research/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: q }),
+      body: JSON.stringify({ query: q, page }),
     });
     data = await res.json();
   } catch (err) {
@@ -36,11 +36,21 @@ async function runSearch() {
   }
 
   if (!data.results?.length) {
+    if (page > 1) {
+      root.innerHTML = `<p class="search-empty">No more results on page ${page}.</p>`;
+      renderPagination(root, page, false);
+      return;
+    }
     root.innerHTML = `<p class="search-empty">No results found for <em>${escHtml(q)}</em>. Try different keywords.</p>`;
     return;
   }
 
-  root.innerHTML = `<p class="search-meta">${data.results.length} results via SearXNG</p>`;
+  root.innerHTML = "";
+  const meta = document.createElement("p");
+  meta.className = "search-meta";
+  meta.textContent = `${data.results.length} results via SearXNG · page ${data.page ?? page}`;
+  root.appendChild(meta);
+
   data.results.forEach((r) => {
     const host = safeHost(r.url);
     const div = document.createElement("div");
@@ -52,6 +62,37 @@ async function runSearch() {
     `;
     root.appendChild(div);
   });
+
+  renderPagination(root, data.page ?? page, data.has_more);
+  root.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function renderPagination(root, page, hasMore) {
+  const nav = document.createElement("div");
+  nav.className = "search-pagination";
+  nav.setAttribute("role", "navigation");
+  nav.setAttribute("aria-label", "Search results pages");
+
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "secondary";
+  prev.textContent = "← Previous";
+  prev.disabled = page <= 1;
+  prev.addEventListener("click", () => runSearch(page - 1));
+
+  const label = document.createElement("span");
+  label.className = "search-pagination-label";
+  label.textContent = `Page ${page}`;
+
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "secondary";
+  next.textContent = "Next →";
+  next.disabled = !hasMore;
+  next.addEventListener("click", () => runSearch(page + 1));
+
+  nav.append(prev, label, next);
+  root.appendChild(nav);
 }
 
 function searxngDownBanner() {

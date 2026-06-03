@@ -9,19 +9,28 @@ import httpx
 from core.config import get_settings
 
 
-async def web_search(query: str, limit: int = 8) -> dict[str, Any]:
+DEFAULT_SEARCH_LIMIT = 20
+
+
+async def web_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT, page: int = 1) -> dict[str, Any]:
     settings = get_settings()
     base = settings.searxng_url.rstrip("/")
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
                 f"{base}/search",
-                params={"q": query, "format": "json", "language": "en"},
+                params={
+                    "q": query,
+                    "format": "json",
+                    "language": "en",
+                    "pageno": page,
+                },
             )
             r.raise_for_status()
             data = r.json()
+            raw = data.get("results") or []
             results = []
-            for item in (data.get("results") or [])[:limit]:
+            for item in raw[:limit]:
                 results.append(
                     {
                         "title": item.get("title", ""),
@@ -29,7 +38,15 @@ async def web_search(query: str, limit: int = 8) -> dict[str, Any]:
                         "snippet": item.get("content") or item.get("snippet", ""),
                     }
                 )
-            return {"ok": True, "query": query, "results": results, "engine": "searxng"}
+            return {
+                "ok": True,
+                "query": query,
+                "results": results,
+                "engine": "searxng",
+                "page": page,
+                "limit": limit,
+                "has_more": len(raw) >= limit,
+            }
     except Exception as e:
         return {
             "ok": False,

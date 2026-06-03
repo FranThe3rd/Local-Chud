@@ -17,7 +17,7 @@ class NoCacheStaticMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
         path = request.url.path
-        if path == "/" or path.endswith(".html") or path.endswith(".js") or path.startswith("/static/"):
+        if path in ("/", "/app", "/login") or path.endswith(".html") or path.endswith(".js") or path.startswith("/static/"):
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
             response.headers["Pragma"] = "no-cache"
         return response
@@ -30,7 +30,7 @@ class CSPNonceMiddleware(BaseHTTPMiddleware):
         nonce = secrets.token_urlsafe(16)
         request.state.csp_nonce = nonce
         response = await call_next(request)
-        if request.url.path in ("/", "/login") or request.url.path.endswith(".html"):
+        if request.url.path in ("/", "/login", "/app") or request.url.path.endswith(".html"):
             settings = get_settings()
             csp = (
                 f"default-src 'self'; "
