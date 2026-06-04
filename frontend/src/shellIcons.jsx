@@ -44,8 +44,8 @@ function ThemeIcon() {
 
   useEffect(() => {
     const onTheme = () => setTheme(read());
-    window.addEventListener("localchud:theme-change", onTheme);
-    return () => window.removeEventListener("localchud:theme-change", onTheme);
+    window.addEventListener("localllm:theme-change", onTheme);
+    return () => window.removeEventListener("localllm:theme-change", onTheme);
   }, []);
 
   return theme === "dark"

@@ -13,7 +13,7 @@ COPY . .
 RUN mkdir -p /app/data
 
 ENV PYTHONUNBUFFERED=1
-ENV LOCALCHUD_DATA_DIR=/app/data
+ENV LOCALLLM_DATA_DIR=/app/data
 
 EXPOSE 7001
 

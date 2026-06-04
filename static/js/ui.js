@@ -77,5 +77,5 @@ export async function refreshHeaderFromSettings() {
     const msg = document.getElementById("status-msg");
     if (msg) msg.textContent = "settings error";
   }
-  setStatus("status-app", true, "local chud ok");
+  setStatus("status-app", true, "LocalLLM ok");
 }

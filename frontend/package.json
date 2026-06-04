@@ -1,5 +1,5 @@
 {
-  "name": "localchud-chat",
+  "name": "localllm-chat",
   "private": true,
   "type": "module",
   "scripts": {

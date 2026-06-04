@@ -17,7 +17,7 @@ DEFAULT_DATA = ROOT / "data"
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "local chud"
+    app_name: str = "LocalLLM"
     secret_key: str = ""
     data_dir: Path = DEFAULT_DATA
     database_url: str = ""
@@ -56,7 +56,8 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     data_env = (
-        os.getenv("LOCALCHUD_DATA_DIR")
+        os.getenv("LOCALLLM_DATA_DIR")
+        or os.getenv("LOCALCHUD_DATA_DIR")
         or os.getenv("KEELHOUSE_DATA_DIR")
         or os.getenv("BETTERCHATBOTS_DATA_DIR")
     )

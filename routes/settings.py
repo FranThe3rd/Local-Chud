@@ -16,7 +16,7 @@ from core.db import User, get_db
 from services.settings_service import get_llm_settings, save_llm_settings
 from src.llm.client import LLMClient
 
-logger = logging.getLogger("localchud")
+logger = logging.getLogger("localllm")
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 

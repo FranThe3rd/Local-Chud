@@ -1,5 +1,5 @@
 """
-local chud — self-hosted, local-first AI workspace.
+LocalLLM — self-hosted, local-first AI workspace.
 MIT License. FastAPI monolith serving vanilla-JS frontend.
 """
 
@@ -45,7 +45,7 @@ from routes import (
 )
 from services.user_service import ensure_admin_user
 
-logger = logging.getLogger("localchud")
+logger = logging.getLogger("localllm")
 logging.basicConfig(level=logging.INFO)
 
 STATIC = Path(__file__).parent / "static"
@@ -76,7 +76,7 @@ async def lifespan(app: FastAPI):
         temp = ensure_admin_user(db)
         if temp:
             print("\n" + "=" * 60)
-            print("local chud — first boot — admin created")
+            print("LocalLLM — first boot — admin created")
             print(f"   Username: admin")
             print(f"   Temp password: {temp}")
             print("   Change this after logging in!")
@@ -94,7 +94,7 @@ async def lifespan(app: FastAPI):
 limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
 
 app = FastAPI(
-    title="local chud",
+    title="LocalLLM",
     description="Privacy-first homelab AI workspace",
     version="0.1.0",
     lifespan=lifespan,
@@ -123,7 +123,7 @@ if STATIC.exists():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "app": "local chud"}
+    return {"status": "ok", "app": "LocalLLM"}
 
 
 def _render_page(filename: str, request: Request, fallback: str) -> HTMLResponse:
@@ -153,7 +153,7 @@ def _maybe_auto_login(request: Request, db: Session, redirect_to: str = "/") -> 
 
 @app.get("/")
 async def home_page(request: Request):
-    return _render_page("home.html", request, "<h1>local chud</h1><p>home.html missing</p>")
+    return _render_page("home.html", request, "<h1>LocalLLM</h1><p>home.html missing</p>")
 
 
 @app.get("/login")
@@ -175,7 +175,7 @@ async def app_page(request: Request, db: Session = Depends(get_db)):
                 return auto
             return RedirectResponse(url="/login", status_code=302)
 
-    return _render_page("index.html", request, "<h1>local chud</h1><p>index.html missing</p>")
+    return _render_page("index.html", request, "<h1>LocalLLM</h1><p>index.html missing</p>")
 
 
 @app.get("/manifest.json")
@@ -183,7 +183,7 @@ def manifest():
     p = STATIC / "manifest.json"
     if p.exists():
         return FileResponse(p, media_type="application/json")
-    return {"name": "local chud"}
+    return {"name": "LocalLLM"}
 
 
 @app.get("/sw.js")

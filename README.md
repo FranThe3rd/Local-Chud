@@ -1,4 +1,4 @@
-# local chud
+# LocalLLM
 
 A local-first AI workspace that runs on your machine — chat, documents, memory, web research, and model compare — powered by [Ollama](https://ollama.com). No API keys, no cloud required.
 
@@ -8,11 +8,11 @@ Inspired by the idea of a private, self-hosted assistant you actually own.
 
 ## Quick start (macOS)
 
-The easiest way to run local chud on a Mac is the included startup script. It handles almost everything for you.
+The easiest way to run LocalLLM on a Mac is the included startup script. It handles almost everything for you.
 
 ```bash
-git clone https://github.com/FranThe3rd/Local-Chud.git
-cd Local-Chud
+git clone https://github.com/FranThe3rd/LocalLLM.git
+cd LocalLLM
 chmod +x run.sh
 ./run.sh
 ```
@@ -66,7 +66,7 @@ Copy env defaults on first run (`.env` from `.env.example`).
 **Change port:**
 
 ```bash
-LOCALCHUD_PORT=7002 ./run.sh
+LOCALLLM_PORT=7002 ./run.sh
 ```
 
 **Default model to pull on first run:**

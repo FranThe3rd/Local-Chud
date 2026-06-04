@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
-  <title>local chud — private, local-first AI workspace</title>
+  <title>LocalLLM — private, local-first AI workspace</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="/static/style.css?v={{ASSETS_V}}" />
   <script nonce="{{CSP_NONCE}}">
     (function () {
-      var t = localStorage.getItem("localchud-theme") || localStorage.getItem("keelhouse-theme") || "dark";
+      var t = localStorage.getItem("localllm-theme") || localStorage.getItem("localchud-theme") || localStorage.getItem("keelhouse-theme") || "dark";
       document.documentElement.setAttribute("data-theme", t);
     })();
   </script>
@@ -165,7 +165,7 @@
 <body>
   <main class="landing">
     <div class="landing__inner">
-      <svg class="landing__logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="local chud logo">
+      <svg class="landing__logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LocalLLM logo">
         <defs>
           <linearGradient id="lc-red" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
             <stop offset="0" stop-color="#ff6b78" />
@@ -181,13 +181,13 @@
           fill="url(#lc-red)" />
       </svg>
 
-      <h1 class="landing__wordmark">local chud</h1>
+      <h1 class="landing__wordmark">LocalLLM</h1>
       <p class="landing__sub">local-first&nbsp;·&nbsp;private&nbsp;·&nbsp;yours</p>
       <p class="landing__tagline">A self-hosted AI workspace that runs entirely on your hardware. No cloud, no keys, no tracking.</p>
 
       <div class="landing__actions">
         <a class="landing__btn landing__btn--primary" href="/app">Get Started</a>
-        <a class="landing__btn landing__btn--ghost" href="https://github.com/FranThe3rd/Local-Chud" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+        <a class="landing__btn landing__btn--ghost" href="https://github.com/FranThe3rd/LocalLLM" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
     </div>
     <p class="landing__foot">Self-hosted · MIT Licensed</p>

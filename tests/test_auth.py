@@ -1,7 +1,7 @@
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["app"] == "local chud"
+    assert r.json()["app"] == "LocalLLM"
 
 
 def test_login_required(client):

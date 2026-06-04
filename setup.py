@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""First-run wizard for local chud."""
+"""First-run wizard for LocalLLM."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ DATA = ROOT / "data"
 
 
 def main() -> int:
-    print("local chud setup")
+    print("LocalLLM setup")
     print("=" * 30)
     DATA.mkdir(parents=True, exist_ok=True)
     (DATA / "uploads").mkdir(exist_ok=True)

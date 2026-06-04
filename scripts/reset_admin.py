@@ -25,7 +25,7 @@ def main() -> int:
         user.password_hash = hash_password(temp)
     db.commit()
     db.close()
-    print("local chud — admin reset")
+    print("LocalLLM — admin reset")
     print(f"   Username: admin")
     print(f"   Password: {temp}")
     return 0

@@ -66,8 +66,8 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
       idSeq = 1;
       setItems(normalizeLoadedMessages(e.detail || []));
     };
-    window.addEventListener("localchud:chat-load", onLoad);
-    return () => window.removeEventListener("localchud:chat-load", onLoad);
+    window.addEventListener("localllm:chat-load", onLoad);
+    return () => window.removeEventListener("localllm:chat-load", onLoad);
   }, []);
 
   const saveDocument = useCallback(
@@ -267,7 +267,7 @@ export function ChatApp({ ensureActiveSession, apiFetch }) {
             );
           });
           setStreaming(false);
-          window.dispatchEvent(new CustomEvent("localchud:sessions-refresh"));
+          window.dispatchEvent(new CustomEvent("localllm:sessions-refresh"));
         } else {
           setStreaming(false);
         }

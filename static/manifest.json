@@ -1,6 +1,6 @@
 {
-  "name": "local chud",
-  "short_name": "chud",
+  "name": "LocalLLM",
+  "short_name": "LocalLLM",
   "description": "local-first AI workspace",
   "start_url": "/app",
   "display": "standalone",

@@ -223,7 +223,7 @@ export async function sendMessage(text, agentMode, displayText) {
       setAssistantContent(assistantEl, finalText);
       addSaveButton(assistantDiv, finalText, userText);
     }
-    window.dispatchEvent(new CustomEvent("localchud:sessions-refresh"));
+    window.dispatchEvent(new CustomEvent("localllm:sessions-refresh"));
   } catch (err) {
     if (err.name !== "AbortError") {
       setAssistantContent(assistantEl, state.full || asText(err.message));

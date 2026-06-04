@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>login — local chud</title>
+  <title>login — LocalLLM</title>
   <link rel="stylesheet" href="/static/style.css" />
   <script nonce="{{CSP_NONCE}}">
     (function () {
-      var t = localStorage.getItem("localchud-theme") || "dark";
+      var t = localStorage.getItem("localllm-theme") || localStorage.getItem("localchud-theme") || "dark";
       document.documentElement.setAttribute("data-theme", t);
     })();
   </script>
 </head>
 <body class="login-page">
   <div class="login-card">
-    <h1>local chud</h1>
+    <h1>LocalLLM</h1>
     <p class="sub">local-first · slightly janky · yours</p>
     <form id="login-form">
       <div class="form-group">

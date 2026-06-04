@@ -1,4 +1,4 @@
-const STORAGE_KEY = "localchud-theme";
+const STORAGE_KEY = "localllm-theme";
 
 const THEME_ICONS = {
   dark: [
@@ -25,6 +25,7 @@ function renderThemeIcon(theme = getTheme()) {
 export function getTheme() {
   return (
     localStorage.getItem(STORAGE_KEY) ||
+    localStorage.getItem("localchud-theme") ||
     localStorage.getItem("keelhouse-theme") ||
     localStorage.getItem("odysseus-theme") ||
     "dark"
@@ -35,7 +36,7 @@ export function setTheme(theme) {
   localStorage.setItem(STORAGE_KEY, theme);
   document.documentElement.setAttribute("data-theme", theme);
   renderThemeIcon(theme);
-  window.dispatchEvent(new CustomEvent("localchud:theme-change"));
+  window.dispatchEvent(new CustomEvent("localllm:theme-change"));
 }
 
 export function toggleTheme() {

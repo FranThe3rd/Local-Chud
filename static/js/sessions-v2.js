@@ -237,7 +237,7 @@ export function initSessions() {
   document.getElementById("btn-delete-all-chats")?.addEventListener("click", () => {
     deleteAllSessions().catch((e) => console.error("deleteAllSessions:", e));
   });
-  window.addEventListener("localchud:sessions-refresh", () => {
+  window.addEventListener("localllm:sessions-refresh", () => {
     loadSessions().catch((e) => console.error("sessions refresh:", e));
   });
   readyPromise = loadSessions().catch((e) => {

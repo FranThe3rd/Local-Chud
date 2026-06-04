@@ -1,5 +1,5 @@
 /**
- * local chud — main entry
+ * LocalLLM — main entry
  */
 
 import { apiFetch } from "./js/api.js";

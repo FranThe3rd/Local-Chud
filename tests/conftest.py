@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 # Use temp data dir before importing app
 _tmp = tempfile.mkdtemp()
-os.environ["LOCALCHUD_DATA_DIR"] = _tmp
+os.environ["LOCALLLM_DATA_DIR"] = _tmp
 os.environ["AUTH_ENABLED"] = "true"
 
 from app import app  # noqa: E402

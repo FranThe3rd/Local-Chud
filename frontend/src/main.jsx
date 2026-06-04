@@ -20,6 +20,6 @@ export function mountChatApp(deps) {
 
 export function renderMessages(messages) {
   window.dispatchEvent(
-    new CustomEvent("localchud:chat-load", { detail: messages })
+    new CustomEvent("localllm:chat-load", { detail: messages })
   );
 }

@@ -1,5 +1,5 @@
 services:
-  localchud:
+  localllm:
     build: .
     ports:
       - "7001:7001"
@@ -11,7 +11,7 @@ services:
       - CHROMA_URL=http://chroma:8000
       - SEARXNG_URL=http://searxng:8080
       - NTFY_URL=http://ntfy:80
-      - LOCALCHUD_DATA_DIR=/app/data
+      - LOCALLLM_DATA_DIR=/app/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

@@ -32,4 +32,4 @@ def calendar_events(user: Annotated[User, Depends(get_current_user)]):
 
 @router.get("/api/admin/health")
 def admin_health(user: Annotated[User, Depends(require_admin)]):
-    return {"status": "ok", "app": "local chud", "admin": True}
+    return {"status": "ok", "app": "LocalLLM", "admin": True}
